@@ -1,0 +1,331 @@
+/**
+ * app.js - Shared utilities for CauLongVui front-end
+ */
+
+const API_BASE = '/api';
+
+async function fetchAPI(endpoint, options = {}) {
+  const defaultOptions = {
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    ...options,
+  };
+  try {
+    const res = await fetch(`${API_BASE}${endpoint}`, defaultOptions);
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      throw new Error(json.message || `HTTP ${res.status}`);
+    }
+    return json.data;
+  } catch (err) {
+    console.error(`[API Error] ${endpoint}:`, err.message);
+    throw err;
+  }
+}
+
+function formatCurrency(amount) {
+  if (amount == null) return '—';
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency', currency: 'VND', maximumFractionDigits: 0
+  }).format(amount);
+}
+
+function formatWalletBalance(amount) {
+  const numeric = Number(amount || 0);
+  return `${numeric.toLocaleString('vi-VN')}đ`;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  const [y, m, d] = dateStr.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function formatTime(timeStr) {
+  if (!timeStr) return '—';
+  const [h, m] = timeStr.split(':');
+  return `${h}:${m}`;
+}
+
+const toastContainer = (() => {
+  let el = document.getElementById('toast-container');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'toast-container';
+    document.body.appendChild(el);
+  }
+  return el;
+})();
+
+function showToast(message, type = 'success', duration = 4000) {
+  const icons = { success: '[Thành công]', error: '[Lỗi]', warning: '[Cảnh báo]', info: '[Thông tin]' };
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <span class="toast-icon">${icons[type] || '[Thông báo]'}</span>
+    <span class="toast-msg">${message}</span>`;
+  toastContainer.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100%)';
+    toast.style.transition = 'all 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+function courtStatusBadge(status) {
+  const map = {
+    AVAILABLE:   { cls: 'badge-success', label: 'Còn trống' },
+    BOOKED:      { cls: 'badge-warning', label: 'Đã đặt' },
+    MAINTENANCE: { cls: 'badge-danger',  label: 'Bảo trì' },
+  };
+  const s = map[status] || { cls: 'badge-muted', label: status };
+  return `<span class="badge ${s.cls}">${s.label}</span>`;
+}
+
+function bookingStatusBadge(status) {
+  const map = {
+    PENDING:   { cls: 'badge-warning', label: 'Chờ xác nhận' },
+    CONFIRMED: { cls: 'badge-success', label: 'Đã xác nhận' },
+    CANCELLED: { cls: 'badge-danger',  label: 'Đã hủy' },
+    COMPLETED: { cls: 'badge-muted',   label: 'Hoàn thành' },
+  };
+  const s = map[status] || { cls: 'badge-muted', label: status };
+  return `<span class="badge ${s.cls}">${s.label}</span>`;
+}
+
+function renderSkeletons(container, count = 6, height = '280px') {
+  container.innerHTML = Array.from({ length: count }, () =>
+    `<div class="skeleton" style="height:${height};border-radius:14px;"></div>`
+  ).join('');
+}
+
+async function loadComponent(id, url) {
+  const container = document.getElementById(id);
+  if (!container) return;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Could not load ${url}`);
+    const html = await res.text();
+    container.innerHTML = html;
+    updateActiveNavLink();
+
+    if (id === 'header-placeholder') {
+      initHeaderEvents();
+    }
+  } catch (err) {
+    console.error(`[Load Error] ${url}:`, err.message);
+  }
+}
+
+function updateActiveNavLink() {
+  const path = location.pathname.replace(/\/$/, '') || '/index.html';
+  document.querySelectorAll('.nav-links a').forEach(a => {
+    const href = a.getAttribute('href');
+    if (!href) return;
+    const cleanHref = href.replace(/\/$/, '');
+
+    const isActive = (path.endsWith(cleanHref) && cleanHref !== '') ||
+      (path === '/' && (cleanHref === '/' || cleanHref === '/index.html')) ||
+      (path.endsWith('index.html') && (cleanHref === '/' || cleanHref === '/index.html'));
+
+    a.classList.toggle('active', isActive);
+  });
+}
+
+function getCurrentUser() {
+  try {
+    return JSON.parse(localStorage.getItem('currentUser') || 'null');
+  } catch {
+    return null;
+  }
+}
+
+function setCurrentUser(user) {
+  localStorage.setItem('currentUser', JSON.stringify(user));
+}
+
+function updateStoredWalletBalance(balance) {
+  const user = getCurrentUser();
+  if (!user) return;
+  user.walletBalance = balance;
+  setCurrentUser(user);
+}
+
+async function refreshWalletHeader(userId) {
+  if (!userId) return null;
+  try {
+    const wallet = await fetchAPI(`/wallets/user/${userId}`);
+    const balanceEl = document.getElementById('navWalletBalance');
+    if (balanceEl) {
+      balanceEl.textContent = formatWalletBalance(wallet.balance);
+    }
+    updateStoredWalletBalance(wallet.balance);
+    return wallet;
+  } catch (err) {
+    const balanceEl = document.getElementById('navWalletBalance');
+    if (balanceEl && !balanceEl.textContent.trim()) {
+      balanceEl.textContent = formatWalletBalance(0);
+    }
+    return null;
+  }
+}
+
+function initHeaderEvents() {
+  const nav = document.getElementById('mainNav');
+  if (nav) {
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 10);
+    });
+  }
+
+  const user = getCurrentUser();
+  const navActions = document.getElementById('navActions');
+  if (!navActions) return;
+
+  if (user) {
+    if (user.role === 'ADMIN') {
+      const navLinks = document.querySelector('.nav-links');
+      if (navLinks) {
+        navLinks.style.display = 'none';
+      }
+    }
+
+    const cartCount = getCartCount();
+
+    if (user.role === 'ADMIN') {
+      navActions.innerHTML = `
+        <a href="/admin/admin.html" class="btn-manage">Quản lý</a>
+        <div class="nav-user-menu" id="navUserMenu">
+          <button class="nav-user-btn" onclick="toggleUserMenu()" id="navUserBtn">
+            <div class="nav-user-avatar">${(user.fullName || 'A').charAt(0).toUpperCase()}</div>
+            <span class="nav-user-name">${(user.fullName || user.email).split(' ').slice(-1)[0]}</span>
+            <span style="font-size:11px;color:var(--muted)">▾</span>
+          </button>
+          <div class="nav-user-dropdown" id="navUserDropdown" style="display:none;">
+            <div class="dropdown-header">
+              <div class="dropdown-name">${user.fullName}</div>
+              <div class="dropdown-role">${roleLabel(user.role)}</div>
+            </div>
+            <a href="/profile.html" class="dropdown-item">Tài khoản của tôi</a>
+            <a href="/admin/admin.html" class="dropdown-item">Quản trị hệ thống</a>
+            <a href="/auth/login.html" class="dropdown-item dropdown-logout" onclick="handleLogout();return false;">Đăng xuất</a>
+          </div>
+        </div>
+      `;
+    } else {
+      navActions.innerHTML = `
+        <a href="/profile.html#wallet-section" class="nav-wallet-chip" id="navWalletChip" title="Mở ví điện tử">
+          <span class="nav-wallet-label">Số dư</span>
+          <strong id="navWalletBalance">${formatWalletBalance(user.walletBalance)}</strong>
+        </a>
+        <a href="/cart.html" class="nav-cart-btn" id="navCartBtn" title="Giỏ hàng">
+          Giỏ hàng
+          <span class="cart-badge" id="cartBadge" style="${cartCount > 0 ? '' : 'display:none'}"> ${cartCount}</span>
+        </a>
+        <div class="nav-user-menu" id="navUserMenu">
+          <button class="nav-user-btn" onclick="toggleUserMenu()" id="navUserBtn">
+            ${user.membershipTier && user.membershipTier !== 'NORMAL' ? `<div class="user-tier-tag ${user.membershipTier}">${user.membershipTier}</div>` : ''}
+            <div class="nav-user-avatar">${(user.fullName || 'U').charAt(0).toUpperCase()}</div>
+            <span class="nav-user-name">${(user.fullName || user.email).split(' ').slice(-1)[0]}</span>
+            <span style="font-size:11px;color:var(--muted)">▾</span>
+          </button>
+            <div class="nav-user-dropdown" id="navUserDropdown" style="display:none;">
+            <div class="dropdown-header">
+              <div class="dropdown-name">${user.fullName}</div>
+              <div class="dropdown-role">
+                ${roleLabel(user.role)}
+                ${user.membershipTier && user.membershipTier !== 'NORMAL' ? `<span class="badge-vip">${user.membershipTier}</span>` : ''}
+              </div>
+            </div>
+            <a href="/profile.html" class="dropdown-item">Tài khoản của tôi</a>
+            <a href="/profile.html#wallet-section" class="dropdown-item">Ví của tôi</a>
+            <a href="/membership.html" class="dropdown-item" style="color:var(--green);font-weight:700;">Nâng cấp tài khoản</a>
+            <a href="/my-bookings.html" class="dropdown-item">Sân đã đặt</a>
+            <a href="/cart.html" class="dropdown-item">Giỏ hàng của tôi</a>
+            <a href="/my-orders.html" class="dropdown-item">Mặt hàng đã đặt</a>
+            <a href="/my-racket-rentals.html" class="dropdown-item">Vợt đã thuê</a>
+            ${user.role === 'STAFF' ? '<a href="/admin/court-management.html" class="dropdown-item">Quản lý sân</a>' : ''}
+            <a href="/auth/login.html" class="dropdown-item dropdown-logout" onclick="handleLogout();return false;">Đăng xuất</a>
+          </div>
+        </div>
+        ${user.role === 'STAFF' ? `<a href="/admin/court-management.html" class="btn-manage">Quản lý</a>` : ''}
+        <a href="/courts.html" class="btn-nav-cta">Đặt sân ngay</a>
+      `;
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#navUserMenu')) {
+        const dd = document.getElementById('navUserDropdown');
+        if (dd) dd.style.display = 'none';
+      }
+    });
+
+    if (user.role !== 'ADMIN') {
+      refreshWalletHeader(user.id);
+    }
+  } else {
+    navActions.innerHTML = `
+      <a href="/auth/login.html" class="btn-login">Đăng nhập</a>
+      <a href="/auth/register.html" class="btn-nav-cta">Đăng ký</a>
+    `;
+  }
+}
+
+function toggleUserMenu() {
+  const dd = document.getElementById('navUserDropdown');
+  if (dd) dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+
+function hasRole(...roles) {
+  const user = getCurrentUser();
+  if (!user) return false;
+  return roles.includes(user.role);
+}
+
+function requireAuth(redirectUrl = null) {
+  const user = getCurrentUser();
+  if (!user) {
+    const currentPage = window.location.pathname;
+    window.location.href = `/auth/login.html?redirect=${encodeURIComponent(redirectUrl || currentPage)}`;
+    return false;
+  }
+  return true;
+}
+
+function logout() {
+  localStorage.removeItem('currentUser');
+  window.location.href = '/auth/login.html';
+}
+
+function handleLogout() {
+  localStorage.removeItem('currentUser');
+  window.location.replace('/auth/login.html');
+}
+
+function getCartCount() {
+  try {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    return cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+  } catch {
+    return 0;
+  }
+}
+
+function updateCartBadge() {
+  const badge = document.getElementById('cartBadge');
+  if (!badge) return;
+  const count = getCartCount();
+  badge.textContent = count;
+  badge.style.display = count > 0 ? 'inline-flex' : 'none';
+}
+
+function roleLabel(role) {
+  const map = { ADMIN: 'Quản trị viên', STAFF: 'Nhân viên', CUSTOMER: 'Khách hàng' };
+  return map[role] || role;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadComponent('header-placeholder', '/components/header.html');
+  loadComponent('footer-placeholder', '/components/footer.html');
+  updateActiveNavLink();
+});

@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tài khoản của tôi – Cầu Lông Vui</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <meta name="description" content="Thông tin tài khoản cá nhân và lịch sử đặt sân tại Cầu Lông Vui." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/shared.css" />
+  <link rel="stylesheet" href="/css/header-footer.css" />
+  <style>
+    body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--bg); }
+
+    .profile-page {
+      max-width: 820px; margin: 0 auto;
+      padding: 48px 24px 100px;
+    }
+
+    /* ── Avatar block ── */
+    .profile-hero {
+      display: flex; align-items: center; gap: 28px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 20px; padding: 32px; margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .profile-avatar {
+      width: 92px; height: 92px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--green), #1a7a3c);
+      color: #fff; font-size: 38px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; box-shadow: 0 8px 24px var(--green-glow);
+    }
+    .profile-hero-info h1 {
+      font-size: 24px; font-weight: 900; color: var(--dark); margin-bottom: 4px;
+    }
+    .profile-role-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--green-pale); color: var(--green);
+      font-size: 12px; font-weight: 700; padding: 4px 14px;
+      border-radius: 20px; margin-top: 6px;
+    }
+    .profile-hero-meta {
+      margin-top: 8px; font-size: 13px; color: var(--muted); display: flex; gap: 16px; flex-wrap: wrap;
+    }
+    .profile-hero-meta span { display: flex; align-items: center; gap: 5px; }
+
+    /* ── Section card ── */
+    .info-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px; margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .info-card h2 {
+      font-size: 15px; font-weight: 800; color: var(--dark);
+      margin-bottom: 20px; padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .info-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 13px 0; border-bottom: 1px solid #f1f5f9;
+    }
+    .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .info-label {
+      font-size: 13px; font-weight: 600; color: var(--muted);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .info-value { font-size: 14px; font-weight: 700; color: var(--dark); text-align: right; }
+
+    /* ── Quick links ── */
+    .quick-links { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .quick-link {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px 18px;
+      text-decoration: none; color: var(--dark);
+      transition: all .25s; box-shadow: var(--shadow-sm);
+    }
+    .quick-link:hover { border-color: var(--green); transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .quick-link .ql-icon {
+      font-size: 26px; width: 48px; height: 48px;
+      background: var(--green-pale); border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .quick-link .ql-text strong { display: block; font-size: 13.5px; font-weight: 800; margin-bottom: 2px; }
+    .quick-link .ql-text span { font-size: 11.5px; color: var(--muted); }
+
+    /* ── Booking history section ── */
+    .booking-history { display: flex; flex-direction: column; gap: 16px; }
+
+    .bk-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      display: flex; gap: 0;
+      box-shadow: var(--shadow-sm);
+      transition: transform .25s, box-shadow .25s;
+    }
+    .bk-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+    .bk-card-img {
+      width: 130px; flex-shrink: 0;
+      background: #cde8d6 center/cover no-repeat;
+      position: relative;
+    }
+    .bk-card-img img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+
+    /* Time badge overlay on image */
+    .bk-time-badge {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 6px 8px;
+      font-size: 11px; font-weight: 800;
+      text-align: center; letter-spacing: 0.02em;
+      backdrop-filter: blur(4px);
+    }
+    .bk-time-badge.expired {
+      background: rgba(100,116,139,0.88); color: #fff;
+    }
+    .bk-time-badge.upcoming {
+      background: rgba(21,128,61,0.9); color: #fff;
+    }
+
+    .bk-card-body {
+      flex: 1; padding: 12px 16px;
+      display: flex; flex-direction: column; justify-content: space-between; gap: 8px;
+    }
+    .bk-court-name { font-size: 15px; font-weight: 800; color: var(--dark); margin-bottom: 0px; }
+    .bk-meta { display: flex; gap: 10px 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+    .bk-meta span { display: flex; align-items: center; gap: 4px; }
+    .bk-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+    .bk-price { font-size: 18px; font-weight: 900; color: var(--green); }
+    .bk-status-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11.5px; font-weight: 700; padding: 4px 12px; border-radius: 20px;
+    }
+    .pill-CONFIRMED { background: #dcfce7; color: #15803d; border: 1px solid #bdf2d0; }
+    .pill-PENDING   { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; }
+    .pill-CANCELLED { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .pill-COMPLETED { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+
+    /* Stripe on card */
+    .bk-card { position: relative; padding-left: 6px; }
+    .bk-status-stripe { 
+      position: absolute; left: 0; top: 0; bottom: 0; width: 6px; z-index: 10;
+      border-top-left-radius: 16px; border-bottom-left-radius: 16px;
+    }
+    .stripe-CONFIRMED { background: var(--green); }
+    .stripe-PENDING   { background: #eab308; }
+    .stripe-CANCELLED { background: var(--red); }
+    .stripe-COMPLETED { background: #94a3b8; }
+
+    /* Modal Details (from my-bookings.html) */
+    .detail-row { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed var(--border); padding-bottom: 8px; }
+    .detail-row label { font-weight: 600; color: var(--muted); font-size: 13px; }
+    .detail-row span { font-weight: 700; color: var(--dark); text-align: right; font-size: 14px; }
+    .modal-footer-btns { padding: 16px 24px; background: var(--bg); border-top: 1px solid var(--border); display: flex; gap: 12px; flex-wrap: wrap; }
+    .modal-btn { flex: 1; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 700; text-align: center; text-decoration: none; cursor: pointer; border: none; font-family: inherit; transition: all 0.2s; min-width: 120px; }
+    .btn-order-items { background: var(--green); color: #fff; }
+    .btn-order-items:hover { background: var(--green-light); transform: translateY(-1px); }
+    .btn-pass-san { background: #fef08a; color: #a16207; border: 1.5px solid #fde047; }
+    .btn-pass-san:hover { background: #fde047; }
+    .btn-cancel-booking { background: #fee2e2; color: #dc2626; border: 1.5px solid #fca5a5; }
+    .btn-cancel-booking:hover { background: #dc2626; color: #fff; }
+
+    /* Skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, #e8f5ee 25%, #d4e8da 50%, #e8f5ee 75%);
+      background-size: 400% 100%; animation: shimmer 1.5s infinite; border-radius: 16px;
+    }
+    @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+    /* Empty state */
+    .empty-bk {
+      text-align: center; padding: 48px 20px; color: var(--muted);
+    }
+    .empty-bk .ei { font-size: 52px; margin-bottom: 12px; }
+    .empty-bk h3 { font-size: 18px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+    .empty-bk p { font-size: 13.5px; margin-bottom: 20px; }
+    .empty-bk a {
+      display: inline-block; padding: 11px 26px;
+      background: var(--green); color: #fff; border-radius: 12px;
+      font-weight: 700; font-size: 14px; text-decoration: none;
+      box-shadow: 0 4px 16px var(--green-glow); transition: all .2s;
+    }
+    .empty-bk a:hover { background: var(--green-light); transform: translateY(-1px); }
+
+    /* ── Logout ── */
+    .logout-btn {
+      display: flex; align-items: center; gap: 10px;
+      width: 100%; background: #fee2e2; color: #dc2626;
+      border: none; border-radius: 12px; padding: 14px 20px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: all .2s; font-family: inherit; margin-top: 20px;
+    }
+    .logout-btn:hover { background: #dc2626; color: #fff; }
+
+    /* ── Edit Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(15,23,42,0.55); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      opacity: 0; pointer-events: none; transition: opacity .25s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: var(--white); border-radius: 20px;
+      width: 100%; max-width: 480px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.22);
+      transform: translateY(20px); transition: transform .3s cubic-bezier(.22,1,.36,1);
+      overflow: hidden;
+    }
+    .modal-overlay.open .modal-box { transform: translateY(0); }
+    .modal-header {
+      padding: 22px 24px 0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-header h3 { font-size: 17px; font-weight: 800; color: var(--dark); }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--bg); border: none; cursor: pointer;
+      font-size: 16px; display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+    .modal-close:hover { background: #fee2e2; color: #dc2626; }
+    .modal-body { padding: 20px 24px 24px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block; font-size: 12.5px; font-weight: 700;
+      color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .04em;
+    }
+    .form-group input {
+      width: 100%; padding: 11px 14px;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 14.5px; font-family: 'Be Vietnam Pro', sans-serif;
+      color: var(--dark); background: var(--bg); outline: none;
+      box-sizing: border-box; transition: border-color .2s, box-shadow .2s;
+    }
+    .form-group input:focus {
+      border-color: var(--green); background: var(--white);
+      box-shadow: 0 0 0 3px var(--green-glow);
+    }
+    .form-group input:disabled { opacity: .55; cursor: not-allowed; }
+    .form-divider {
+      font-size: 11.5px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em;
+      margin: 18px 0 14px; display: flex; align-items: center; gap: 10px;
+    }
+    .form-divider::before, .form-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .modal-actions {
+      display: flex; gap: 10px; margin-top: 4px;
+    }
+    .btn-cancel {
+      flex: 1; padding: 12px; border-radius: 10px;
+      border: 1.5px solid var(--border); background: var(--bg);
+      font-size: 14px; font-weight: 700; color: var(--muted);
+      cursor: pointer; font-family: inherit; transition: all .2s;
+    }
+    .btn-cancel:hover { border-color: var(--green); color: var(--green); }
+    .btn-save {
+      flex: 2; padding: 12px; border-radius: 10px;
+      border: none; background: var(--green); color: #fff;
+      font-size: 14px; font-weight: 800; cursor: pointer;
+      font-family: inherit; box-shadow: 0 4px 16px var(--green-glow);
+      transition: all .2s;
+    }
+    .btn-save:hover { background: var(--green-light); transform: translateY(-1px); }
+    .btn-save:disabled { opacity: .6; pointer-events: none; }
+    .form-error {
+      background: #fee2e2; color: #b91c1c;
+      border-radius: 8px; padding: 10px 14px;
+      font-size: 13px; font-weight: 600; margin-bottom: 14px;
+      display: none;
+    }
+
+    /* Edit trigger button */
+    .btn-edit-profile {
+      margin-left: auto; display: inline-flex; align-items: center; gap: 5px;
+      background: var(--green-pale); color: var(--green);
+      border: 1px solid rgba(45,138,78,.25); border-radius: 8px;
+      padding: 5px 12px; font-size: 12px; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: all .2s;
+    }
+    .btn-edit-profile:hover { background: var(--green); color: #fff; }
+
+    .wallet-balance-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 20px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #103d24, #1f6a3e);
+      color: #fff;
+      margin-bottom: 18px;
+    }
+    .wallet-balance-card small {
+      display: block;
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      opacity: .72;
+      margin-bottom: 8px;
+    }
+    .wallet-balance-card strong {
+      display: block;
+      font-size: 30px;
+      font-weight: 900;
+    }
+    .wallet-balance-card p {
+      margin-top: 6px;
+      font-size: 13px;
+      opacity: .85;
+    }
+    .wallet-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .wallet-btn {
+      border: none;
+      border-radius: 12px;
+      padding: 11px 16px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .2s;
+    }
+    .wallet-btn-primary {
+      background: #fff;
+      color: var(--green);
+    }
+    .wallet-btn-primary:hover { transform: translateY(-1px); }
+    .wallet-btn-secondary {
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+    .wallet-btn-secondary:hover { background: rgba(255,255,255,0.22); }
+    .wallet-note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .wallet-transaction-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .wallet-transaction-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fbfdfb;
+    }
+    .wallet-transaction-item strong {
+      display: block;
+      font-size: 14px;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+    .wallet-transaction-item span {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .wallet-amount {
+      text-align: right;
+      font-size: 16px;
+      font-weight: 900;
+    }
+    .wallet-amount.positive { color: #15803d; }
+    .wallet-amount.negative { color: #b91c1c; }
+    .wallet-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      margin-top: 6px;
+    }
+    .wallet-status.COMPLETED { background: #dcfce7; color: #15803d; }
+    .wallet-status.PENDING { background: #fef3c7; color: #a16207; }
+    .wallet-status.FAILED { background: #fee2e2; color: #b91c1c; }
+    .wallet-pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .wallet-page-btn {
+      border: 1px solid var(--border);
+      background: var(--white);
+      color: var(--dark);
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .wallet-page-btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+    .wallet-empty {
+      text-align: center;
+      padding: 24px 18px;
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* ── Access denied ── */
+    .access-denied { text-align: center; padding: 100px 24px; }
+
+    @media (max-width: 640px) {
+      .quick-links { grid-template-columns: 1fr; }
+      .profile-hero { flex-direction: column; text-align: center; }
+      .bk-card-img { width: 90px; }
+      .bk-card-body { padding: 12px 14px; }
+    }
+  </style>
+</head>
+<body>
+<div id="header-placeholder"></div>
+
+<!-- ── Không có quyền ── -->
+<div id="accessDenied" style="display:none;">
+  <div class="access-denied">
+    <div style="font-size:64px"></div>
+    <h2 style="margin:16px 0 8px;font-size:22px;">Vui lòng đăng nhập</h2>
+    <p style="color:var(--muted);margin-bottom:24px;">Bạn cần đăng nhập để xem trang này.</p>
+    <a href="/auth/login.html?redirect=/profile.html"
+       style="background:var(--green);color:#fff;padding:12px 28px;border-radius:12px;text-decoration:none;font-weight:700;">
+      Đăng nhập ngay
+    </a>
+  </div>
+</div>
+
+<!-- ── Nội dung trang ── -->
+<div id="profilePage" style="display:none;">
+  <div class="profile-page">
+
+    <!-- Hero -->
+    <div class="profile-hero">
+      <div class="profile-avatar" id="avatarEl"></div>
+      <div class="profile-hero-info">
+        <h1 id="fullNameEl">—</h1>
+        <div class="profile-role-badge" id="roleBadgeEl"></div>
+        <div class="profile-hero-meta">
+          <span><span id="metaEmail">—</span></span>
+          <span><span id="metaPhone">—</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thông tin tài khoản -->
+    <div class="info-card">
+      <h2>Thông tin tài khoản
+        <button class="btn-edit-profile" onclick="openEditModal()">Chỉnh sửa</button>
+      </h2>
+      <div class="info-row">
+        <span class="info-label">Họ và tên</span>
+        <span class="info-value" id="infoName">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Email</span>
+        <span class="info-value" id="infoEmail">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Số điện thoại</span>
+        <span class="info-value" id="infoPhone">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Vai trò</span>
+        <span class="info-value" id="infoRole">—</span>
+      </div>
+    </div>
+
+    <div class="info-card" id="wallet-section">
+      <h2>Ví của tôi</h2>
+      <div class="wallet-balance-card">
+        <div>
+          <small>Số dư khả dụng</small>
+          <strong id="walletBalance">0đ</strong>
+          <p id="walletHint">Nạp tiền để thanh toán sân nhanh hơn và nhận hoàn tiền trực tiếp vào ví.</p>
+        </div>
+        <div class="wallet-actions">
+          <button class="wallet-btn wallet-btn-primary" onclick="openTopupModal()">Nạp tiền</button>
+          <button class="wallet-btn wallet-btn-secondary" onclick="openWithdrawModal()">Rút tiền</button>
+        </div>
+      </div>
+      <div class="wallet-note">Lịch sử giao dịch gần đây. Các giao dịch rút tiền chờ admin duyệt sẽ hiển thị trạng thái `PENDING`.</div>
+      <div class="wallet-transaction-list" id="walletTransactions">
+        <div class="wallet-empty">Đang tải lịch sử giao dịch...</div>
+      </div>
+      <div class="wallet-pagination">
+        <button class="wallet-page-btn" id="walletPrevBtn" onclick="changeWalletPage(-1)">Trang trước</button>
+        <span id="walletPageInfo">Trang 1</span>
+        <button class="wallet-page-btn" id="walletNextBtn" onclick="changeWalletPage(1)">Trang sau</button>
+      </div>
+    </div>
+
+    <!-- Lịch sử đặt sân -->
+    <div class="info-card" id="bookingHistoryCard">
+      <h2>Lịch sử đặt sân</h2>
+      <div class="booking-history" id="bookingHistory">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Truy cập nhanh -->
+    <div class="info-card" id="quickLinksCard">
+      <h2>Truy cập nhanh</h2>
+      <div class="quick-links">
+        <a href="/courts.html" class="quick-link">
+          <div class="ql-text">
+            <strong>Đặt sân mới</strong>
+            <span>Chọn sân và khung giờ</span>
+          </div>
+        </a>
+        <a href="/cart.html" class="quick-link">
+          <div class="ql-text">
+            <strong>Giỏ hàng</strong>
+            <span>Xem sản phẩm đã chọn</span>
+          </div>
+        </a>
+        <a href="/my-orders.html" class="quick-link">
+          <div class="ql-text">
+            <strong>Mặt hàng đã đặt</strong>
+            <span>Lịch sử đặt hàng cửa hàng</span>
+          </div>
+        </a>
+        <a href="/products.html" class="quick-link">
+          <div class="ql-text">
+            <strong>Cửa hàng</strong>
+            <span>Mua cầu, nước, đồ ăn</span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Đăng xuất -->
+    <button class="logout-btn" onclick="confirmLogout()">
+      Đăng xuất khỏi tài khoản
+    </button>
+
+  </div>
+</div>
+
+<div id="footer-placeholder"></div>
+
+<!-- ── Modal chi tiết đặt sân ── -->
+<div class="modal-overlay" id="bookingDetailModal" onclick="handleBookingOverlayClick(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="bmTitle">Chi tiết đặt sân</h3>
+      <button class="modal-close" onclick="closeBookingModal()">✕</button>
+    </div>
+    <div class="modal-body" id="bmBody" style="padding-bottom: 0;">
+      <!-- Content here -->
+    </div>
+    <div class="modal-footer-btns" id="bmFooter">
+      <!-- Buttons here -->
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal chỉnh sửa profile ── -->
+<div class="modal-overlay" id="editModal" onclick="handleOverlayClick(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Chỉnh sửa thông tin</h3>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-error" id="editError"></div>
+
+      <div class="form-group">
+        <label>Họ và tên</label>
+        <input type="text" id="editFullName" placeholder="Nhập họ và tên" maxlength="100" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="editEmail" disabled />
+      </div>
+      <div class="form-group">
+        <label>Số điện thoại</label>
+        <input type="tel" id="editPhone" placeholder="VD: 0987654321" maxlength="20" />
+      </div>
+
+      <div class="form-divider">Đổi mật khẩu (tuỳ chọn)</div>
+
+      <div class="form-group">
+        <label>Mật khẩu hiện tại</label>
+        <input type="password" id="editCurrentPwd" placeholder="Nhập mật khẩu hiện tại" />
+      </div>
+      <div class="form-group">
+        <label>Mật khẩu mới</label>
+        <input type="password" id="editNewPwd" placeholder="Để trống nếu không đổi" />
+      </div>
+      <div class="form-group">
+        <label>Xác nhận mật khẩu mới</label>
+        <input type="password" id="editConfirmPwd" placeholder="Nhập lại mật khẩu mới" />
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeEditModal()">Huỷ</button>
+        <button class="btn-save" id="btnSave" onclick="saveProfile()">Lưu thay đổi</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="topupModal" onclick="handleWalletOverlayClick(event, 'topupModal')">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Nạp tiền vào ví</h3>
+      <button class="modal-close" onclick="closeTopupModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-error" id="topupError"></div>
+      <div class="form-group">
+        <label>Số tiền nạp (VND)</label>
+        <input type="number" id="topupAmount" min="1000" step="1000" placeholder="Ví dụ: 100000" />
+      </div>
+      <div class="wallet-note">Hệ thống sẽ tạo link thanh toán MoMo và cộng tiền vào ví khi giao dịch thành công.</div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeTopupModal()">Huỷ</button>
+        <button class="btn-save" id="topupSubmitBtn" onclick="submitTopup()">Tiếp tục qua MoMo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="withdrawModal" onclick="handleWalletOverlayClick(event, 'withdrawModal')">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Yêu cầu rút tiền</h3>
+      <button class="modal-close" onclick="closeWithdrawModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-error" id="withdrawError"></div>
+      <div class="form-group">
+        <label>Số tiền muốn rút (VND)</label>
+        <input type="number" id="withdrawAmount" min="1000" step="1000" placeholder="Ví dụ: 150000" />
+      </div>
+      <div class="form-group">
+        <label>Ngân hàng</label>
+        <input type="text" id="withdrawBankName" placeholder="Ví dụ: Vietcombank" />
+      </div>
+      <div class="form-group">
+        <label>Số tài khoản</label>
+        <input type="text" id="withdrawAccountNumber" placeholder="Nhập số tài khoản" />
+      </div>
+      <div class="form-group">
+        <label>Chủ tài khoản</label>
+        <input type="text" id="withdrawAccountHolder" placeholder="Nhập tên chủ tài khoản" />
+      </div>
+      <div class="wallet-note">Tiền sẽ bị trừ tạm thời khỏi ví cho đến khi admin phê duyệt hoặc từ chối yêu cầu.</div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeWithdrawModal()">Huỷ</button>
+        <button class="btn-save" id="withdrawSubmitBtn" onclick="submitWithdrawal()">Gửi yêu cầu</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast-container"></div>
+
+<script src="/js/app.js"></script>
+<script>
+let userBookings = []; // To store fetched bookings for modal lookups
+let currentBookingId = null;
+let walletPage = 0;
+const walletPageSize = 5;
+let walletTotalPages = 1;
+
+// ── Court image pool (shared with index.html)
+const courtImages = [
+  'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+  'https://images.pexels.com/photos/3660204/pexels-photo-3660204.jpeg?auto=compress&cs=tinysrgb&w=600',
+  'https://images.unsplash.com/photo-1622279457486-640ca4a4ea6b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+  'https://images.unsplash.com/photo-1599813589139-44fb7425f190?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+];
+
+// ── Role map
+const roleMap = {
+  ADMIN:    ' Quản trị viên',
+  STAFF:    ' Nhân viên',
+  CUSTOMER: ' Khách hàng',
+};
+
+const walletTypeLabel = {
+  TOPUP: 'Nạp tiền',
+  PAYMENT: 'Thanh toán',
+  REFUND: 'Hoàn tiền',
+  WITHDRAWAL: 'Rút tiền',
+};
+
+function formatDateTime(dateTime) {
+  if (!dateTime) return '—';
+  const dt = new Date(dateTime);
+  return dt.toLocaleString('vi-VN');
+}
+
+function getWalletAmountClass(amount) {
+  return Number(amount || 0) >= 0 ? 'positive' : 'negative';
+}
+
+function renderWalletTransactions(items = []) {
+  const container = document.getElementById('walletTransactions');
+  if (!items.length) {
+    container.innerHTML = `<div class="wallet-empty">Chưa có giao dịch nào trong ví.</div>`;
+    return;
+  }
+
+  container.innerHTML = items.map(tx => `
+    <div class="wallet-transaction-item">
+      <div>
+        <strong>${walletTypeLabel[tx.type] || tx.type}</strong>
+        <span>${escHtml(tx.description || tx.referenceId || 'Giao dịch ví điện tử')}</span>
+        <span>${formatDateTime(tx.createdAt)}</span>
+      </div>
+      <div>
+        <div class="wallet-amount ${getWalletAmountClass(tx.amount)}">${formatCurrency(tx.amount)}</div>
+        <div class="wallet-status ${tx.status}">${tx.status}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadWalletOverview() {
+  const user = getCurrentUser();
+  if (!user) return;
+
+  try {
+    const [wallet, txPage] = await Promise.all([
+      fetchAPI(`/wallets/user/${user.id}`),
+      fetchAPI(`/wallets/user/${user.id}/transactions?page=${walletPage}&size=${walletPageSize}`)
+    ]);
+
+    document.getElementById('walletBalance').textContent = formatWalletBalance(wallet.balance);
+    renderWalletTransactions(txPage.items || []);
+
+    const total = Number(txPage.pagination?.total || 0);
+    walletTotalPages = Math.max(1, Math.ceil(total / walletPageSize));
+    document.getElementById('walletPageInfo').textContent = `Trang ${walletPage + 1} / ${walletTotalPages}`;
+    document.getElementById('walletPrevBtn').disabled = walletPage <= 0;
+    document.getElementById('walletNextBtn').disabled = walletPage >= walletTotalPages - 1;
+
+    if (typeof refreshWalletHeader === 'function') {
+      refreshWalletHeader(user.id);
+    }
+  } catch (err) {
+    document.getElementById('walletTransactions').innerHTML = `
+      <div class="wallet-empty">Không thể tải ví điện tử: ${escHtml(err.message || 'Lỗi không xác định')}</div>
+    `;
+  }
+}
+
+function changeWalletPage(delta) {
+  const nextPage = walletPage + delta;
+  if (nextPage < 0 || nextPage >= walletTotalPages) return;
+  walletPage = nextPage;
+  loadWalletOverview();
+}
+
+function handleWalletOverlayClick(event, modalId) {
+  if (event.target === document.getElementById(modalId)) {
+    document.getElementById(modalId).classList.remove('open');
+  }
+}
+
+function openTopupModal() {
+  document.getElementById('topupAmount').value = '';
+  document.getElementById('topupError').style.display = 'none';
+  document.getElementById('topupModal').classList.add('open');
+}
+
+function closeTopupModal() {
+  document.getElementById('topupModal').classList.remove('open');
+}
+
+function openWithdrawModal() {
+  document.getElementById('withdrawAmount').value = '';
+  document.getElementById('withdrawBankName').value = '';
+  document.getElementById('withdrawAccountNumber').value = '';
+  document.getElementById('withdrawAccountHolder').value = '';
+  document.getElementById('withdrawError').style.display = 'none';
+  document.getElementById('withdrawModal').classList.add('open');
+}
+
+function closeWithdrawModal() {
+  document.getElementById('withdrawModal').classList.remove('open');
+}
+
+function showWalletFormError(id, message) {
+  const el = document.getElementById(id);
+  el.textContent = message;
+  el.style.display = 'block';
+}
+
+async function submitTopup() {
+  const user = getCurrentUser();
+  const amount = Number(document.getElementById('topupAmount').value || 0);
+  if (!amount || amount <= 0) {
+    showWalletFormError('topupError', 'Vui lòng nhập số tiền nạp hợp lệ.');
+    return;
+  }
+
+  const btn = document.getElementById('topupSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Đang tạo thanh toán...';
+  try {
+    const data = await fetchAPI('/wallets/topup', {
+      method: 'POST',
+      body: JSON.stringify({ userId: user.id, amount })
+    });
+    window.location.href = data.payUrl;
+  } catch (err) {
+    showWalletFormError('topupError', err.message || 'Không thể tạo yêu cầu nạp tiền.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Tiếp tục qua MoMo';
+  }
+}
+
+async function submitWithdrawal() {
+  const user = getCurrentUser();
+  const amount = Number(document.getElementById('withdrawAmount').value || 0);
+  const bankName = document.getElementById('withdrawBankName').value.trim();
+  const accountNumber = document.getElementById('withdrawAccountNumber').value.trim();
+  const accountHolder = document.getElementById('withdrawAccountHolder').value.trim();
+
+  if (!amount || amount <= 0 || !bankName || !accountNumber || !accountHolder) {
+    showWalletFormError('withdrawError', 'Vui lòng nhập đầy đủ thông tin rút tiền.');
+    return;
+  }
+
+  const btn = document.getElementById('withdrawSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Đang gửi...';
+  try {
+    await fetchAPI('/wallets/withdrawals', {
+      method: 'POST',
+      body: JSON.stringify({
+        userId: user.id,
+        amount,
+        bankName,
+        accountNumber,
+        accountHolder
+      })
+    });
+    closeWithdrawModal();
+    showToast('Đã tạo yêu cầu rút tiền. Admin sẽ duyệt trong trang quản lý.', 'success');
+    walletPage = 0;
+    await loadWalletOverview();
+  } catch (err) {
+    showWalletFormError('withdrawError', err.message || 'Không thể tạo yêu cầu rút tiền.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Gửi yêu cầu';
+  }
+}
+
+// ── Status helpers
+const statusLabel = {
+  CONFIRMED: 'Đã xác nhận',
+  PENDING:   'Chờ xác nhận',
+  CANCELLED: 'Đã hủy',
+  COMPLETED: 'Hoàn thành',
+};
+const statusPillClass = {
+  CONFIRMED: 'pill-CONFIRMED',
+  PENDING:   'pill-PENDING',
+  CANCELLED: 'pill-CANCELLED',
+  COMPLETED: 'pill-COMPLETED',
+};
+const cardBorderClass = {
+  CONFIRMED: 'bk-confirmed',
+  PENDING:   'bk-pending',
+  CANCELLED: 'bk-cancelled',
+  COMPLETED: 'bk-completed',
+};
+
+/**
+ * Determine whether a booking has passed.
+ * bookingDate: "2026-03-22"   endTime: "10:30:00" or "10:30"
+ */
+function isExpired(bookingDate, endTime) {
+  if (!bookingDate || !endTime) return false;
+  // Parse date
+  const [y, m, d] = bookingDate.toString().split('-').map(Number);
+  // Parse time (HH:mm or HH:mm:ss)
+  const timeParts = endTime.toString().split(':').map(Number);
+  const endDt = new Date(y, m - 1, d, timeParts[0] || 0, timeParts[1] || 0, timeParts[2] || 0);
+  return Date.now() > endDt.getTime();
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(s || ''));
+  return d.innerHTML;
+}
+
+function renderBookings(bookings) {
+  const container = document.getElementById('bookingHistory');
+
+  if (!bookings || bookings.length === 0) {
+    container.innerHTML = `
+      <div class="empty-bk">
+        <div class="ei"></div>
+        <h3>Chưa có lịch đặt sân nào</h3>
+        <a href="/courts.html" style="margin-top:10px;">Tìm sân ngay</a>
+      </div>`;
+    return;
+  }
+
+  const displayBookings = bookings.slice(0, 2);
+
+  const htmlList = displayBookings.map((b, i) => {
+    const img = courtImages[i % courtImages.length];
+    const expired = isExpired(b.bookingDate, b.endTime);
+    
+    let timeBadgeClass = expired ? 'expired' : 'upcoming';
+    let timeBadgeText  = expired ? 'Hết giờ' : 'Đặt sân thành công';
+    
+    if (b.status === 'CANCELLED') {
+      timeBadgeClass = 'expired';
+      timeBadgeText  = 'Đã hủy';
+    }
+
+    const borderClass = cardBorderClass[b.status] || '';
+    const pillClass   = statusPillClass[b.status] || 'pill-COMPLETED';
+    const sLabel      = statusLabel[b.status] || b.status;
+
+    const dateStr  = b.bookingDate ? b.bookingDate.toString().split('T')[0] : '—';
+    // Format dd/mm/yyyy
+    let displayDate = dateStr;
+    if (dateStr && dateStr.includes('-')) {
+      const [fy, fm, fd] = dateStr.split('-');
+      displayDate = `${fd}/${fm}/${fy}`;
+    }
+
+    const startFmt = b.startTime ? b.startTime.toString().slice(0, 5) : '—';
+    const endFmt   = b.endTime   ? b.endTime.toString().slice(0, 5)   : '—';
+
+    const priceStr = b.totalPrice != null
+      ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(b.totalPrice)
+      : '—';
+
+    return `
+      <div class="bk-card" onclick="openBookingDetail(${b.id})" style="cursor:pointer;">
+        <div class="bk-status-stripe stripe-${b.status || 'COMPLETED'}"></div>
+        <div class="bk-card-img">
+          <img src="${img}" alt="${escHtml(b.courtName)}" loading="lazy" />
+          <div class="bk-time-badge ${timeBadgeClass}">${timeBadgeText}</div>
+        </div>
+        <div class="bk-card-body">
+          <div>
+            <div class="bk-court-name">${escHtml(b.courtName || 'Sân cầu lông')}</div>
+            <div class="bk-meta">
+              <span>Ngày: ${displayDate}</span>
+              <span>Giờ: ${startFmt} – ${endFmt}</span>
+              <span>Tên: ${escHtml((b.customerName || '—').split(' ').slice(-2).join(' '))}</span>
+              <span>SĐT: ${escHtml(b.customerPhone || '—')}</span>
+            </div>
+          </div>
+          <div class="bk-footer">
+            <span class="bk-price">${priceStr}</span>
+            <span class="bk-status-pill ${pillClass}">${sLabel}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = htmlList + `
+    <div style="text-align:center; margin-top:4px;">
+      <a href="/my-bookings.html" style="display:inline-flex; align-items:center; justify-content:center; gap:6px; background:var(--green-pale); color:var(--green); font-size:14px; font-weight:800; padding:12px 24px; border-radius:12px; text-decoration:none; width:100%; transition:all 0.2s;">
+        Xem tất cả
+      </a>
+    </div>
+  `;
+}
+
+async function loadBookings(phone) {
+  const container = document.getElementById('bookingHistory');
+  // Show skeletons
+  container.innerHTML = [1, 2, 3].map(() =>
+    `<div class="skeleton" style="height:110px;"></div>`
+  ).join('');
+
+  try {
+    const user = getCurrentUser();
+    const url = (user && user.id) 
+      ? `/api/bookings?userId=${user.id}` 
+      : `/api/bookings?phone=${encodeURIComponent(phone)}`;
+      
+    const res  = await fetch(url);
+    const json = await res.json();
+    const data = (json.success && json.data) ? json.data : [];
+    userBookings = data; // Store globally
+    renderBookings(data);
+  } catch (err) {
+    container.innerHTML = `
+      <div class="empty-bk">
+        <div class="ei"></div>
+        <h3>Không thể tải lịch đặt</h3>
+        <p>${escHtml(err.message)}</p>
+      </div>`;
+  }
+}
+
+// ── Init
+document.addEventListener('DOMContentLoaded', () => {
+  const user = getCurrentUser();
+
+  if (!user) {
+    document.getElementById('accessDenied').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('profilePage').style.display = 'block';
+
+  // Avatar
+  const initial = (user.fullName || user.email || 'U').charAt(0).toUpperCase();
+  document.getElementById('avatarEl').textContent = initial;
+
+  // Hero
+  document.getElementById('fullNameEl').textContent = user.fullName || 'Người dùng';
+  document.getElementById('roleBadgeEl').textContent = roleMap[user.role] || user.role;
+  document.getElementById('metaEmail').textContent = user.email || '—';
+  document.getElementById('metaPhone').textContent = user.phone || '—';
+
+  // Info rows
+  document.getElementById('infoName').textContent  = user.fullName || '—';
+  document.getElementById('infoEmail').textContent = user.email    || '—';
+  document.getElementById('infoPhone').textContent = user.phone    || '—';
+  document.getElementById('infoRole').textContent  = roleMap[user.role] || user.role || '—';
+  loadWalletOverview();
+
+  // Hide specific sections for ADMIN
+  if (user.role === 'ADMIN') {
+    document.getElementById('bookingHistoryCard').style.display = 'none';
+    document.getElementById('quickLinksCard').style.display = 'none';
+  } else {
+    // Booking history
+    if (user.phone) {
+      loadBookings(user.phone);
+    } else {
+      document.getElementById('bookingHistory').innerHTML = `
+        <div class="empty-bk">
+          <div class="ei"></div>
+          <h3>Chưa có số điện thoại</h3>
+          <p>Tài khoản của bạn chưa có số điện thoại. Vui lòng cập nhật để xem lịch đặt sân.</p>
+          <a href="/my-bookings.html">🔍 Tìm theo số điện thoại</a>
+        </div>`;
+    }
+  }
+});
+
+// ── Edit modal functions
+function openEditModal() {
+  const user = getCurrentUser();
+  if (!user) return;
+
+  // Pre-fill form
+  document.getElementById('editFullName').value    = user.fullName || '';
+  document.getElementById('editEmail').value       = user.email    || '';
+  document.getElementById('editPhone').value       = user.phone    || '';
+  document.getElementById('editCurrentPwd').value  = '';
+  document.getElementById('editNewPwd').value      = '';
+  document.getElementById('editConfirmPwd').value  = '';
+
+  // Hide any previous error
+  const err = document.getElementById('editError');
+  err.style.display = 'none'; err.textContent = '';
+
+  document.getElementById('editModal').classList.add('open');
+  document.getElementById('editFullName').focus();
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').classList.remove('open');
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('editModal')) closeEditModal();
+}
+
+async function saveProfile() {
+  const user = getCurrentUser();
+  if (!user) return;
+
+  const fullName    = document.getElementById('editFullName').value.trim();
+  const phone       = document.getElementById('editPhone').value.trim();
+  const currentPwd  = document.getElementById('editCurrentPwd').value;
+  const newPwd      = document.getElementById('editNewPwd').value;
+  const confirmPwd  = document.getElementById('editConfirmPwd').value;
+
+  const errEl = document.getElementById('editError');
+  const showErr = (msg) => { errEl.textContent = msg; errEl.style.display = 'block'; };
+
+  // Validate
+  if (!fullName) { showErr('Vui lòng nhập họ và tên.'); return; }
+  if (newPwd && newPwd !== confirmPwd) { showErr('Mật khẩu mới không khớp.'); return; }
+  if (newPwd && newPwd.length < 6) { showErr('Mật khẩu mới phải từ 6 ký tự.'); return; }
+  if (newPwd && !currentPwd) { showErr('Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu mới.'); return; }
+
+  errEl.style.display = 'none';
+
+  const btn = document.getElementById('btnSave');
+  btn.disabled = true;
+  btn.textContent = 'Đang lưu...';
+
+  const payload = { id: user.id, fullName, phone };
+  if (newPwd) { payload.currentPassword = currentPwd; payload.newPassword = newPwd; }
+
+  try {
+    const res  = await fetch('/api/auth/update', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+
+    if (!res.ok || !json.success) {
+      showErr(json.message || 'Cập nhật thất bại. Vui lòng thử lại.');
+      return;
+    }
+
+    // Update localStorage
+    const updated = { ...user, ...json.data };
+    localStorage.setItem('currentUser', JSON.stringify(updated));
+
+    // Refresh UI
+    refreshProfileUI(updated);
+    closeEditModal();
+    showToast('Cập nhật thông tin thành công!', 'success');
+
+  } catch (err) {
+    showErr('Lỗi kết nối. Vui lòng thử lại.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Lưu thay đổi';
+  }
+}
+
+function refreshProfileUI(user) {
+  // Avatar
+  const initial = (user.fullName || user.email || 'U').charAt(0).toUpperCase();
+  const avatarEl = document.getElementById('avatarEl');
+  if (avatarEl) avatarEl.textContent = initial;
+
+  // Hero
+  const nameEl = document.getElementById('fullNameEl');
+  if (nameEl) nameEl.textContent = user.fullName || 'Người dùng';
+  const metaPhone = document.getElementById('metaPhone');
+  if (metaPhone) metaPhone.textContent = user.phone || '—';
+
+  // Info rows
+  document.getElementById('infoName').textContent  = user.fullName || '—';
+  document.getElementById('infoPhone').textContent = user.phone    || '—';
+  if (typeof refreshWalletHeader === 'function' && user.id) {
+    refreshWalletHeader(user.id);
+  }
+
+  // Reload bookings if phone changed
+  if (user.phone) loadBookings(user.phone);
+}
+
+function confirmLogout() {
+  if (confirm('Bạn có chắc muốn đăng xuất không?')) logout();
+}
+
+// ── Booking Detail Modal functions ───────────────────────────────
+function openBookingDetail(id) {
+  const b = userBookings.find(x => x.id === id);
+  if (!b) return;
+  currentBookingId = id;
+  
+  document.getElementById('bmTitle').innerHTML = `Chi tiết sân ${escHtml(b.courtName)}`;
+  const statusLabel = { CONFIRMED: 'Đã xác nhận', PENDING: 'Chờ xác nhận', CANCELLED: 'Đã hủy', COMPLETED: 'Hoàn thành' };
+
+  let html = `
+    <div class="detail-row"><label>Mã Đơn</label><span>#${b.id}</span></div>
+    <div class="detail-row"><label>Trạng Thái</label><span class="pill-${b.status}" style="padding:2px 10px; border-radius:12px; font-size:12px;">${statusLabel[b.status] || b.status}</span></div>
+    <div class="detail-row"><label>Ngày Đặt</label><span>${formatDate(b.bookingDate)}</span></div>
+    <div class="detail-row"><label>Khung Giờ</label><span>${b.startTime} - ${b.endTime}</span></div>
+    <div class="detail-row"><label>Người Đặt</label><span>${escHtml(b.customerName)}</span></div>
+    <div class="detail-row"><label>Số điện thoại</label><span>${escHtml(b.customerPhone)}</span></div>
+    <div class="detail-row"><label>Giá Gốc</label><span style="font-size:16px;color:var(--green);">${b.totalPrice ? b.totalPrice.toLocaleString('vi-VN') + ' đ' : '—'}</span></div>
+  `;
+
+  if (b.isPass) {
+      html += `<div style="margin-top:16px;padding:12px;background:#fefce8;border-radius:8px;border:1px dashed #fde047;text-align:center;">
+        <p style="color:#a16207;font-weight:700;font-size:13px;">Sân này đang được Pass (Bán lại)</p>
+        <p style="font-size:18px;color:var(--red);font-weight:900;">${formatCurrency(b.passPrice)}</p>
+      </div>`;
+  }
+
+  document.getElementById('bmBody').innerHTML = html;
+
+  // --- Check Expiration and status ---
+  const expired = isExpired(b.bookingDate, b.endTime);
+  
+  let footerHtml = '';
+  if (expired) {
+      footerHtml += `<div style="width:100%; text-align:center; color:var(--muted); font-weight:700; font-size:13px; padding:12px; background:#f1f5f9; border-radius:10px;">Sân đã quá thời hạn sử dụng</div>`;
+  } else if (b.status === 'CANCELLED') {
+      footerHtml += `<div style="width:100%; text-align:center; color:var(--red); font-weight:700; font-size:13px; padding:12px; background:#fee2e2; border-radius:10px;">Lịch đặt đã bị hủy</div>`;
+  } else {
+      let buttonsHtml = `<a href="/my-bookings.html" class="modal-btn btn-order-items">Quản lý đặt sân & Order đồ</a>`;
+      
+      if (b.status === 'CONFIRMED' || b.status === 'PENDING') {
+          // Check if cancellable: at least 1 hour before start
+          let canCancel = false;
+          if (b.bookingDate && b.startTime) {
+              const startDateTime = new Date(`${b.bookingDate}T${b.startTime}`);
+              const diffMs = startDateTime - new Date();
+              canCancel = diffMs > 60 * 60 * 1000; // > 1 hour
+          }
+          if (canCancel) {
+              buttonsHtml += `<button class="modal-btn btn-cancel-booking" onclick="cancelBookingFromProfile()">Hủy Đặt Sân</button>`;
+          } else {
+              footerHtml += `<div style="width:100%; font-size:13px; color:#f59e0b; text-align:center; padding:8px; margin-bottom:4px; font-weight:700;">Không thể hủy trong vòng 1 giờ trước giờ đánh</div>`;
+          }
+      }
+      footerHtml += buttonsHtml;
+  }
+  document.getElementById('bmFooter').innerHTML = footerHtml;
+
+  document.getElementById('bookingDetailModal').classList.add('open');
+}
+
+function closeBookingModal() {
+  document.getElementById('bookingDetailModal').classList.remove('open');
+}
+
+function handleBookingOverlayClick(e) {
+  if (e.target === document.getElementById('bookingDetailModal')) closeBookingModal();
+}
+
+async function cancelBookingFromProfile() {
+  if (!currentBookingId) return;
+  const b = userBookings.find(x => x.id === currentBookingId);
+  if (!b) return;
+
+  const confirmed = confirm(`Bạn có chắc muốn hủy đặt sân ${b.courtName}?\nHành động này không thể hoàn tác.`);
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(`/api/bookings/${currentBookingId}/status?status=CANCELLED`, { method: 'PATCH' });
+    const json = await res.json();
+    if (!res.ok || !json.success) throw new Error(json.message || 'Hủy thất bại');
+    
+    showToast('Đã hủy đặt sân. Nếu booking đã thanh toán, tiền đã được hoàn về ví.', 'success');
+    closeBookingModal();
+    // Refresh bookings
+    const user = getCurrentUser();
+    if (user && user.phone) loadBookings(user.phone);
+  } catch (err) {
+    showToast('Lỗi: ' + err.message, 'error');
+  }
+}
+</script>
+</body>
+</html>

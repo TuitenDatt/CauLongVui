@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản trị hệ thống - Cầu Lông Vui</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/shared.css" />
+  <link rel="stylesheet" href="/css/header-footer.css" />
+  <style>
+    .admin-page { padding: 92px 0 64px; min-height: 100vh; background: var(--bg); }
+    .admin-container { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+    .admin-header { display: flex; justify-content: space-between; gap: 20px; align-items: flex-end; margin-bottom: 28px; }
+    .admin-kicker { color: var(--green); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+    .admin-title { font-size: 32px; font-weight: 900; color: var(--dark); line-height: 1.15; }
+    .admin-sub { color: var(--muted); margin-top: 8px; max-width: 620px; }
+    .admin-refresh { border: 1px solid var(--border); background: var(--white); color: var(--dark); border-radius: var(--r-sm); padding: 11px 16px; font-weight: 800; cursor: pointer; }
+    .admin-refresh:hover { border-color: var(--green); color: var(--green); }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
+    .stat-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 18px; min-height: 108px; }
+    .stat-label { color: var(--muted); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+    .stat-value { color: var(--dark); font-size: 30px; font-weight: 900; margin-top: 8px; }
+    .stat-note { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+    .dashboard-grid { display: grid; grid-template-columns: 1.4fr .8fr; gap: 18px; align-items: start; }
+    .panel { background: var(--white); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 20px; }
+    .panel-title { font-size: 18px; color: var(--dark); font-weight: 900; margin-bottom: 14px; }
+    .quick-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .quick-card { border: 1px solid var(--border); border-radius: var(--r-sm); padding: 16px; text-decoration: none; color: inherit; display: block; transition: var(--transition); }
+    .quick-card:hover { border-color: var(--green); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+    .quick-code { width: 38px; height: 38px; border-radius: 8px; background: var(--green-pale); color: var(--green); display: inline-flex; align-items: center; justify-content: center; font-weight: 900; margin-bottom: 10px; }
+    .quick-card h3 { font-size: 15px; color: var(--dark); margin-bottom: 4px; }
+    .quick-card p { color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+    .todo-list { display: flex; flex-direction: column; gap: 10px; }
+    .todo-item { display: flex; justify-content: space-between; gap: 12px; align-items: center; border: 1px solid var(--border); border-radius: var(--r-sm); padding: 12px; }
+    .todo-name { color: var(--dark); font-weight: 800; font-size: 14px; }
+    .todo-desc { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .todo-count { min-width: 34px; height: 28px; border-radius: 8px; background: var(--green-pale); color: var(--green); display: inline-flex; align-items: center; justify-content: center; font-weight: 900; }
+    .access-denied { text-align: center; padding: 120px 20px; }
+
+    @media (max-width: 900px) {
+      .admin-header, .dashboard-grid { grid-template-columns: 1fr; display: grid; }
+      .stats-grid, .quick-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px) {
+      .stats-grid, .quick-grid { grid-template-columns: 1fr; }
+      .admin-title { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="header-placeholder"></div>
+
+  <main class="admin-page" id="adminPage" style="display:none;">
+    <div class="admin-container">
+      <div class="admin-header">
+        <div>
+          <div class="admin-kicker">Bảng điều khiển</div>
+          <h1 class="admin-title">Quản trị Cầu Lông Vui</h1>
+          <p class="admin-sub" id="adminGreeting">Theo dõi dữ liệu vận hành, xử lý booking, kho hàng và yêu cầu ví trong một màn hình.</p>
+        </div>
+        <button class="admin-refresh" onclick="loadDashboard()">Làm mới</button>
+      </div>
+
+      <section class="stats-grid" aria-label="Thống kê tổng quan">
+        <div class="stat-card"><div class="stat-label">Sân</div><div class="stat-value" id="statCourts">-</div><div class="stat-note" id="noteCourts">Đang tải</div></div>
+        <div class="stat-card"><div class="stat-label">Booking</div><div class="stat-value" id="statBookings">-</div><div class="stat-note" id="noteBookings">Đang tải</div></div>
+        <div class="stat-card"><div class="stat-label">Người dùng</div><div class="stat-value" id="statUsers">-</div><div class="stat-note" id="noteUsers">Đang tải</div></div>
+        <div class="stat-card"><div class="stat-label">Kho</div><div class="stat-value" id="statInventory">-</div><div class="stat-note" id="noteInventory">Đang tải</div></div>
+      </section>
+
+      <section class="dashboard-grid">
+        <div class="panel">
+          <h2 class="panel-title">Khu vực quản lý</h2>
+          <div class="quick-grid">
+            <a href="/admin/court-management.html" class="quick-card"><span class="quick-code">S</span><h3>Quản lý sân</h3><p>Thêm sân, cập nhật giá và trạng thái hoạt động.</p></a>
+            <a href="/admin/booking-management.html" class="quick-card"><span class="quick-code">B</span><h3>Quản lý booking</h3><p>Xác nhận, hủy và theo dõi lịch đặt sân.</p></a>
+            <a href="/admin/product-management.html" class="quick-card"><span class="quick-code">P</span><h3>Sản phẩm shop</h3><p>Quản lý dụng cụ, giá bán và tồn kho.</p></a>
+            <a href="/admin/racket-management.html" class="quick-card"><span class="quick-code">V</span><h3>Thuê vợt</h3><p>Quản lý vợt cho thuê, giá thuê và số lượng.</p></a>
+            <a href="/admin/user-management.html" class="quick-card"><span class="quick-code">U</span><h3>Người dùng</h3><p>Quản lý khách hàng, nhân viên và phân quyền.</p></a>
+            <a href="/admin/wallet-management.html" class="quick-card"><span class="quick-code">W</span><h3>Ví điện tử</h3><p>Duyệt yêu cầu rút tiền và theo dõi giao dịch.</p></a>
+            <a href="/admin/food-order-management.html" class="quick-card"><span class="quick-code">F</span><h3>Đơn đồ uống</h3><p>Theo dõi đồ uống và dịch vụ giao tại sân.</p></a>
+          </div>
+        </div>
+
+        <aside class="panel">
+          <h2 class="panel-title">Cần xử lý</h2>
+          <div class="todo-list">
+            <div class="todo-item"><div><div class="todo-name">Booking chờ thanh toán</div><div class="todo-desc">PENDING hoặc chưa có thời điểm thanh toán</div></div><span class="todo-count" id="todoBookings">-</span></div>
+            <div class="todo-item"><div><div class="todo-name">Yêu cầu rút tiền</div><div class="todo-desc">Đang chờ admin duyệt</div></div><span class="todo-count" id="todoWithdrawals">-</span></div>
+            <div class="todo-item"><div><div class="todo-name">Đơn đồ uống</div><div class="todo-desc">Chưa hoàn tất hoặc chưa hủy</div></div><span class="todo-count" id="todoFood">-</span></div>
+            <div class="todo-item"><div><div class="todo-name">Đơn thuê vợt</div><div class="todo-desc">Đang chờ hoặc đã thanh toán</div></div><span class="todo-count" id="todoRackets">-</span></div>
+          </div>
+        </aside>
+      </section>
+    </div>
+  </main>
+
+  <div class="admin-page" id="accessDenied" style="display:none;">
+    <div class="access-denied">
+      <h1 style="font-size:42px;">403</h1>
+      <h2>Không có quyền truy cập</h2>
+      <p>Trang này chỉ dành cho quản trị viên.</p>
+      <a href="/" class="btn-nav-cta" style="display:inline-block; margin-top:20px; text-decoration:none;">Về trang chủ</a>
+    </div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    const zero = value => Number.isFinite(value) ? value : 0;
+
+    async function safeFetch(endpoint, fallback = []) {
+      try {
+        const data = await fetchAPI(endpoint);
+        return Array.isArray(data) ? data : fallback;
+      } catch (err) {
+        console.warn(`[Dashboard] ${endpoint}:`, err.message);
+        return fallback;
+      }
+    }
+
+    function setText(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+
+    async function loadDashboard() {
+      const [courts, bookings, users, products, rackets, rentals, foodOrders, withdrawals] = await Promise.all([
+        safeFetch('/courts'),
+        safeFetch('/bookings'),
+        safeFetch('/users'),
+        safeFetch('/products'),
+        safeFetch('/v1/rackets'),
+        safeFetch('/v1/racket-rentals'),
+        safeFetch('/v1/food-orders'),
+        safeFetch('/admin/wallets/withdrawals')
+      ]);
+
+      const availableCourts = courts.filter(c => c.status === 'AVAILABLE').length;
+      const pendingBookings = bookings.filter(b => b.status === 'PENDING' || (!b.paidAt && b.status !== 'CANCELLED')).length;
+      const confirmedBookings = bookings.filter(b => b.status === 'CONFIRMED').length;
+      const productStock = products.reduce((sum, p) => sum + zero(Number(p.stock)), 0);
+      const racketStock = rackets.reduce((sum, r) => sum + zero(Number(r.stock)), 0);
+
+      setText('statCourts', courts.length);
+      setText('noteCourts', `${availableCourts} sân đang mở`);
+      setText('statBookings', bookings.length);
+      setText('noteBookings', `${confirmedBookings} booking đã xác nhận`);
+      setText('statUsers', users.length);
+      setText('noteUsers', `${users.filter(u => u.role === 'ADMIN').length} admin`);
+      setText('statInventory', productStock + racketStock);
+      setText('noteInventory', `${productStock} sản phẩm, ${racketStock} vợt`);
+
+      setText('todoBookings', pendingBookings);
+      setText('todoWithdrawals', withdrawals.filter(w => w.status === 'PENDING').length);
+      setText('todoFood', foodOrders.filter(o => o.status === 'PENDING').length);
+      setText('todoRackets', rentals.filter(o => o.status === 'PENDING' || o.status === 'PAID').length);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = getCurrentUser();
+      if (!user || user.role !== 'ADMIN') {
+        document.getElementById('accessDenied').style.display = 'block';
+        return;
+      }
+      document.getElementById('adminPage').style.display = 'block';
+      document.getElementById('adminGreeting').textContent = `Chào ${user.fullName || user.email || 'Administrator'}, dữ liệu vận hành đang được cập nhật theo API hiện tại.`;
+      loadDashboard();
+    });
+  </script>
+</body>
+</html>

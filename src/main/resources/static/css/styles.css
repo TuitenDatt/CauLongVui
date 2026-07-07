@@ -1,0 +1,407 @@
+/* =============================
+   Updated Styles using Cầu Lông Vui Brand
+   ============================= */
+
+:root {
+  --bg-primary: var(--bg);
+  --bg-secondary: var(--white);
+  --bg-card: var(--white);
+  --bg-glass: rgba(255, 255, 255, 0.85);
+  --accent: var(--green);
+  --accent-hover: var(--green-light);
+  --accent-glow: var(--green-glow);
+  --accent2: #6c63ff; /* Keeping some variety */
+  --danger: var(--red);
+  --warning: var(--yellow);
+  --text-primary: var(--text);
+  --text-secondary: var(--muted);
+  --text-muted: #94a3b8;
+  --border-color: var(--border);
+  --border-accent: rgba(45,138,78,0.25);
+  --radius: var(--r-md);
+  --radius-sm: var(--r-sm);
+}
+
+/* Reset & Base overwrites from styles.css */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+}
+
+/* =============================
+   Hero / Page Header
+   ============================= */
+.page-hero {
+  background: linear-gradient(135deg, var(--white) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border-color);
+  padding: 2rem 2rem 1.5rem;
+  text-align: center;
+}
+.page-hero h1 {
+  color: var(--dark);
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 0.5rem;
+}
+.page-hero p { color: var(--muted); margin: 0; }
+
+/* =============================
+   Filter Bar (Premium Style)
+   ============================= */
+.filter-bar {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--r-xl);
+  padding: 8px 12px;
+  margin: 1.5rem auto;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  max-width: 1000px;
+  flex-wrap: nowrap;
+}
+
+.filter-group {
+  flex: 1;
+  padding: 8px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+
+.filter-group:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 20%;
+  height: 60%;
+  width: 1px;
+  background: var(--border);
+}
+
+.filter-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-group .form-control {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dark);
+  height: auto;
+  box-shadow: none !important;
+}
+
+.btn-search-main {
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-md);
+  padding: 12px 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-left: 12px;
+}
+.btn-search-main:hover {
+  background: var(--green-light);
+  transform: translateY(-1px);
+}
+
+/* =============================
+   Court Card (Premium Style)
+   ============================= */
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+}
+
+.court-card {
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg) !important;
+  background: var(--white);
+  transition: var(--transition);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.court-card .card-img-wrapper {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+}
+
+.court-card .card-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.court-card:hover .card-img-wrapper img {
+  transform: scale(1.05);
+}
+
+.card-badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 2;
+  padding: 6px 14px;
+  border-radius: var(--r-xl);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  color: var(--text);
+}
+
+.card-fav {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ccc;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.card-fav:hover { color: var(--red); transform: scale(1.1); }
+
+.card-content {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-content h3 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: 2px;
+}
+
+.card-meta-inline {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.card-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.card-meta-item i, .card-meta-item span.icon { font-size: 16px; }
+
+.card-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+.card-owner-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.owner-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--green-pale);
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  border: 1px solid var(--border);
+}
+
+.owner-info {
+  font-size: 14px;
+  color: var(--muted);
+}
+.owner-info strong { color: var(--dark); }
+
+.card-action-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.price-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.price-box .price-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.price-box .price-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--green);
+}
+.price-box .price-unit {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.btn-book-premium {
+  background: var(--green);
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: var(--r-md);
+  font-weight: 700;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition);
+}
+.btn-book-premium:hover {
+  background: var(--green-light);
+  box-shadow: 0 8px 20px var(--green-glow);
+}
+.btn-book-premium.disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* =============================
+   Cards
+   ============================= */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--r-lg);
+}
+.card:hover {
+  border-color: var(--green-light);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+}
+.card-header { border-bottom: 1px solid var(--border-color); }
+.card-footer { border-top: 1px solid var(--border-color); }
+
+/* Court/Product Specific Cards */
+.court-card .court-img, .product-card .product-img {
+  background: var(--green-pale);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--green);
+}
+
+/* Product image: khi có ảnh thật */
+.product-card .product-img--photo {
+  background: #f8f9fa;
+  border-bottom: 1px solid var(--border-color);
+  padding: 0;
+  height: 180px;
+  overflow: hidden;
+}
+.product-card .product-img--photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+.product-card:hover .product-img--photo img {
+  transform: scale(1.06);
+}
+
+.price { color: var(--green) !important; font-weight: 800; }
+
+/* =============================
+   Buttons
+   ============================= */
+.btn-primary {
+  background: var(--green);
+  color: #fff;
+  box-shadow: 0 4px 14px var(--green-glow);
+}
+.btn-primary:hover {
+  background: var(--green-light);
+  box-shadow: 0 6px 20px var(--green-glow);
+  color: #fff;
+}
+.btn-secondary {
+  background: var(--white);
+  border: 1.5px solid var(--border-color);
+  color: var(--mid);
+}
+.btn-secondary:hover {
+  border-color: var(--green);
+  color: var(--green);
+  background: var(--green-pale);
+}
+
+/* =============================
+   Badges
+   ============================= */
+.badge-success { background: var(--green-pale); color: var(--green); }
+.badge-warning { background: #fff8e1; color: #b8860b; }
+.badge-danger { background: #fee2e2; color: var(--red); }
+
+/* =============================
+   Modal
+   ============================= */
+.modal {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+}
+.modal-header { border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
+
+/* Overwrite common colors from original styles.css that might be dark */
+.navbar { background: rgba(244, 250, 246, 0.92) !important; border-bottom: 1px solid var(--border-color) !important; }
+footer { background: var(--dark-2) !important; color: rgba(255,255,255,0.45) !important; }
+.section-header h2 { color: var(--dark); }

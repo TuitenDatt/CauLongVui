@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dang nhap Google - Cau Long Vui</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/css/shared.css" />
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      padding: 24px;
+    }
+
+    .callback-box {
+      width: min(420px, 100%);
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 28px;
+      text-align: center;
+      box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    .callback-box h1 {
+      font-size: 22px;
+      margin-bottom: 10px;
+      color: var(--dark);
+    }
+
+    .callback-box p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="callback-box">
+    <h1>Dang hoan tat dang nhap...</h1>
+    <p>Vui long cho trong giay lat.</p>
+  </div>
+
+  <script>
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      const userId = params.get('userId');
+      const fallback = '/auth/login.html?oauthError=true';
+
+      if (!userId) {
+        window.location.href = fallback;
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/auth/me?id=' + encodeURIComponent(userId));
+        const json = await res.json();
+
+        if (!res.ok || !json.success || !json.data) {
+          window.location.href = fallback;
+          return;
+        }
+
+        const user = json.data;
+        localStorage.setItem('currentUser', JSON.stringify(user));
+
+        const redirect = sessionStorage.getItem('oauthRedirect') || '/';
+        sessionStorage.removeItem('oauthRedirect');
+
+        if (user.role === 'ADMIN' || user.role === 'STAFF') {
+          window.location.href = '/admin/court-management.html';
+        } else {
+          window.location.href = redirect;
+        }
+      } catch (err) {
+        window.location.href = fallback;
+      }
+    })();
+  </script>
+</body>
+
+</html>
