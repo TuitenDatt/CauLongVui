@@ -73,6 +73,18 @@ class BookingHoldServiceTest {
         assertThat(afterRelease.isSuccess()).isTrue();
     }
 
+    @Test
+    void holdSlotBlocksOverlappingHoldByDifferentUser() {
+        LocalDate date = LocalDate.now().plusDays(1);
+        when(bookingRepository.findByCourtIdAndBookingDate(1L, date)).thenReturn(List.of());
+
+        BookingHoldResponse first = service.holdSlot(request(1L, 10L, date, "08:00", "09:00"));
+        BookingHoldResponse overlap = service.holdSlot(request(1L, 11L, date, "08:30", "09:30"));
+
+        assertThat(first.isSuccess()).isTrue();
+        assertThat(overlap.isSuccess()).isFalse();
+    }
+
     private BookingHoldRequest request(Long courtId, Long userId, LocalDate date, String start, String end) {
         return BookingHoldRequest.builder()
                 .courtId(courtId)

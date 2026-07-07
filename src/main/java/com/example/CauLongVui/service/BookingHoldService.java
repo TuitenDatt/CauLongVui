@@ -67,6 +67,26 @@ public class BookingHoldService {
                     .build();
         }
 
+        List<HoldEntry> overlappingHolds = holdMap.values().stream()
+                .filter(entry -> !entry.isExpired())
+                .filter(entry -> overlaps(entry, request))
+                .collect(Collectors.toList());
+
+        boolean heldByAnotherUser = overlappingHolds.stream()
+                .anyMatch(entry -> !entry.getUserId().equals(request.getUserId()));
+        if (heldByAnotherUser) {
+            return BookingHoldResponse.builder()
+                    .courtId(request.getCourtId())
+                    .bookingDate(request.getBookingDate())
+                    .startTime(request.getStartTime())
+                    .endTime(request.getEndTime())
+                    .userId(request.getUserId())
+                    .success(false)
+                    .message("Khung gio dang duoc nguoi khac giu cho. Vui long thu lai sau.")
+                    .build();
+        }
+        overlappingHolds.forEach(this::removeHoldEntry);
+
         // 2. Check if the slot is already held by another user
         HoldEntry existingHold = holdMap.get(slotKey);
         if (existingHold != null && !existingHold.isExpired()) {
@@ -242,6 +262,22 @@ public class BookingHoldService {
 
     private String buildSlotKey(Long courtId, LocalDate date, LocalTime start, LocalTime end) {
         return courtId + ":" + date + ":" + start + ":" + end;
+    }
+
+    private boolean overlaps(HoldEntry entry, BookingHoldRequest request) {
+        return entry.getCourtId().equals(request.getCourtId())
+                && entry.getBookingDate().equals(request.getBookingDate())
+                && request.getStartTime().isBefore(entry.getEndTime())
+                && request.getEndTime().isAfter(entry.getStartTime());
+    }
+
+    private void removeHoldEntry(HoldEntry entry) {
+        String slotKey = buildSlotKey(entry.getCourtId(), entry.getBookingDate(),
+                entry.getStartTime(), entry.getEndTime());
+        holdMap.remove(slotKey);
+        broadcastSlotState(entry.getCourtId(), entry.getBookingDate(),
+                entry.getStartTime(), entry.getEndTime(),
+                SlotStateDTO.SlotStatus.AVAILABLE, null, null);
     }
 
     private void validateHoldRequest(BookingHoldRequest request) {

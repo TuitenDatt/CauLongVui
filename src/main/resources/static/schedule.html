@@ -585,12 +585,14 @@
     }
 
     // ── Build grid ─────────────────────────────────────────────
-    async function buildGrid() {
+    async function buildGrid(refreshAvailability = true) {
       const tbody = document.getElementById('grid-body');
       tbody.innerHTML = `<tr><td colspan="100" style="text-align:center;padding:20px;">Đang tải dữ liệu...</td></tr>`;
 
-      await loadAllBookedSlots(dp.value);
-      await loadActiveHolds(dp.value);
+      if (refreshAvailability) {
+        await loadAllBookedSlots(dp.value);
+        await loadActiveHolds(dp.value);
+      }
 
       tbody.innerHTML = '';
       allCourts.forEach(court => {
@@ -621,7 +623,8 @@
           } else {
             td.className = 'slot empty';
             if (myHold) {
-              td.classList.add('selected', 'by-me');
+              td.classList.add('held', 'selected', 'by-me');
+              td.title = 'Ban dang giu cho nay';
             }
             td.dataset.courtId = court.id;
             td.dataset.courtName = court.name;
@@ -793,6 +796,10 @@
     // SLOT CLICK — handles both single-court & bundle
     // ══════════════════════════════════════════════════════════════
     async function handleSlotClick(cell) {
+      if (cell.classList.contains('held') && !cell.classList.contains('by-me')) {
+        showScheduleToast('Khung gio nay dang duoc nguoi khac giu cho!', 'warning');
+        return;
+      }
       const courtId = String(cell.dataset.courtId);
       const courtName = cell.dataset.courtName;
       const price = parseFloat(cell.dataset.price);
@@ -1066,15 +1073,25 @@
       if (update.bookingDate !== dp.value) return;
       const start = toMin(update.startTime);
       const end = toMin(update.endTime);
+      const sameCourt = h => String(h.courtId) === String(update.courtId);
+      const overlaps = h => h.startMin < end && h.endMin > start;
       if (update.status === 'HELD') {
         const isByMe = String(update.heldByUserId) === String(myUserId);
-        if (!heldSlots.find(h => h.holdId === update.holdId))
-          heldSlots.push({ courtId: update.courtId, startMin: start, endMin: end, isByMe, holdId: update.holdId });
+        heldSlots = heldSlots.filter(h => !(sameCourt(h) && overlaps(h)));
+        heldSlots.push({ courtId: update.courtId, startMin: start, endMin: end, isByMe, holdId: update.holdId });
+        if (!isByMe && String(selCourtId) === String(update.courtId)) {
+          selectedIndices = selectedIndices.filter(i => {
+            const slotStart = toMin(idxToTime(i));
+            const slotEnd = toMin(idxToTime(i + 1));
+            return !(slotStart < end && slotEnd > start);
+          });
+          if (selectedIndices.length === 0) selCourtId = null;
+        }
       } else {
-        heldSlots = heldSlots.filter(h => !(String(h.courtId) === String(update.courtId) && h.startMin === start));
-        if (update.status === 'BOOKED') { loadAllBookedSlots(dp.value).then(() => buildGrid()); return; }
+        heldSlots = heldSlots.filter(h => !(sameCourt(h) && overlaps(h)));
+        if (update.status === 'BOOKED') { loadAllBookedSlots(dp.value).then(() => buildGrid(false)); return; }
       }
-      buildGrid();
+      buildGrid(false);
     }
   </script>
 </body>
