@@ -81,6 +81,17 @@
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover { background: #f8fffe; }
 
+    .category-manager-list {
+      display: grid; gap: 10px; margin-top: 18px;
+    }
+    .category-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 12px 14px; border: 1px solid var(--border);
+      border-radius: 12px; background: #f8fffe;
+    }
+    .category-row-info { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+    .category-row-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
     /* ── Product thumbnail in table ── */
     .prod-thumb {
       width: 52px; height: 52px; border-radius: 10px;
@@ -232,6 +243,8 @@
       font-family: inherit; white-space: nowrap;
     }
     .btn-add:hover { background: #14532d; transform: translateY(-1px); }
+    .btn-add.btn-ghost { background: #e8f5f0; color: var(--green); }
+    .btn-add.btn-ghost:hover { background: var(--green); color: #fff; }
 
     /* ── Spinner ── */
     .spinner {
@@ -288,9 +301,14 @@
         </div>
         <h1 class="mgmt-title">🛍️ Quản lý <span>Sản phẩm</span></h1>
       </div>
-      <button class="btn-add" onclick="openAddModal()">
-        ＋ Thêm sản phẩm
-      </button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn-add btn-ghost" onclick="openCategoryManager()">
+          🗂️ Quản lý danh mục
+        </button>
+        <button class="btn-add" onclick="openAddModal()">
+          ＋ Thêm sản phẩm
+        </button>
+      </div>
     </div>
 
     <!-- Stats -->
@@ -455,16 +473,59 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════
+     MODAL: Quản lý danh mục
+══════════════════════════════════ -->
+<div class="modal-backdrop" id="categoryModal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <h2 class="modal-title">🗂️ Quản lý danh mục</h2>
+      <button class="modal-close" onclick="closeModal('categoryModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="categoryEditId" />
+      <div class="form-row">
+        <div class="form-group">
+          <label for="categoryName">Tên danh mục <span class="required">*</span></label>
+          <input type="text" id="categoryName" placeholder="VD: Nước uống" maxlength="100" />
+        </div>
+        <div class="form-group">
+          <label for="categorySortOrder">Thứ tự hiển thị</label>
+          <input type="number" id="categorySortOrder" value="0" step="10" />
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="resetCategoryForm()">Làm mới</button>
+        <button class="btn btn-primary" id="categorySaveBtn" onclick="saveCategory()">💾 Lưu danh mục</button>
+      </div>
+      <div class="category-manager-list" id="categoryManagerList"></div>
+    </div>
+  </div>
+</div>
+
 <div id="footer-placeholder"></div>
 <div id="toast-container"></div>
 
-<script src="/config.js"></script>`n  <script src="/js/app.js"></script>
+<script src="/config.js"></script>
+<script src="/js/app.js"></script>
 <script>
 /* ══════════════════════════════════════
    State
 ══════════════════════════════════════ */
 let allProducts = [];
+let allCategories = [];
 let pendingDeleteId = null;
+let categoryEditingId = null;
+const DEFAULT_CATEGORIES = [
+  { id: null, name: 'Cầu lông' },
+  { id: null, name: 'Vợt' },
+  { id: null, name: 'Giày' },
+  { id: null, name: 'Túi' },
+  { id: null, name: 'Quần áo' },
+  { id: null, name: 'Phụ kiện' },
+  { id: null, name: 'Nước uống' },
+  { id: null, name: 'Đồ ăn' },
+];
 
 /* ══════════════════════════════════════
    Init
@@ -484,9 +545,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 ══════════════════════════════════════ */
 async function loadProducts() {
   try {
-    allProducts = await fetchAPI('/products');
+    const [products, categories] = await Promise.all([
+      fetchAPI('/products'),
+      loadCategories()
+    ]);
+    allProducts = products;
+    allCategories = categories;
     updateStats(allProducts);
     populateCategoryFilter(allProducts);
+    populateFormCategoryOptions();
     applyFilter();
   } catch (err) {
     document.getElementById('productTableBody').innerHTML = `
@@ -501,6 +568,16 @@ async function loadProducts() {
   }
 }
 
+async function loadCategories() {
+  try {
+    const categories = await fetchAPI('/categories');
+    return categories.length ? categories : DEFAULT_CATEGORIES;
+  } catch (err) {
+    console.warn('[Categories]', err.message);
+    return DEFAULT_CATEGORIES;
+  }
+}
+
 function updateStats(products) {
   const ok  = products.filter(p => p.stockQuantity > 5).length;
   const low = products.filter(p => p.stockQuantity > 0 && p.stockQuantity <= 5).length;
@@ -512,11 +589,24 @@ function updateStats(products) {
 }
 
 function populateCategoryFilter(products) {
-  const cats = [...new Set(products.map(p => p.category).filter(Boolean))].sort();
+  const categoryNames = allCategories.map(c => c.name).filter(Boolean);
+  const productNames = products.map(p => p.category).filter(Boolean);
+  const cats = [...new Set([...categoryNames, ...productNames])].sort();
   const sel = document.getElementById('filterCategory');
   const current = sel.value;
   sel.innerHTML = '<option value="">Tất cả danh mục</option>'
     + cats.map(c => `<option value="${esc(c)}"${c===current?'selected':''}>${esc(c)}</option>`).join('');
+}
+
+function populateFormCategoryOptions() {
+  const sel = document.getElementById('fCategory');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Chọn danh mục —</option>'
+    + allCategories.map(c => {
+      const value = c.id != null ? String(c.id) : c.name;
+      return `<option value="${esc(value)}" data-name="${esc(c.name)}">${getCatIcon(c.name)} ${esc(c.name)}</option>`;
+    }).join('');
+  if (current) sel.value = current;
 }
 
 function applyFilter() {
@@ -609,7 +699,7 @@ function openEditModal(id) {
   document.getElementById('fName').value     = p.name  || '';
   document.getElementById('fPrice').value    = p.price != null ? p.price : '';
   document.getElementById('fStock').value    = p.stockQuantity != null ? p.stockQuantity : '';
-  document.getElementById('fCategory').value = p.category || '';
+  setSelectedCategory(p);
   document.getElementById('fDesc').value     = p.description || '';
   document.getElementById('fImageUrl').value = p.imageUrl || '';
   previewImage(p.imageUrl || '');
@@ -621,6 +711,9 @@ async function saveProduct() {
   const price    = parseFloat(document.getElementById('fPrice').value);
   const stock    = parseInt(document.getElementById('fStock').value);
   const category = document.getElementById('fCategory').value;
+  const categoryOption = document.getElementById('fCategory').selectedOptions[0];
+  const categoryName = categoryOption?.dataset?.name || categoryOption?.textContent?.trim() || '';
+  const categoryId = /^\d+$/.test(category) ? Number(category) : null;
   const desc     = document.getElementById('fDesc').value.trim();
   const imageUrl = document.getElementById('fImageUrl').value.trim();
   const editId   = document.getElementById('editId').value;
@@ -629,9 +722,9 @@ async function saveProduct() {
   if (!name)          return showToast('Vui lòng nhập tên sản phẩm!', 'warning');
   if (isNaN(price) || price < 0) return showToast('Giá bán không hợp lệ!', 'warning');
   if (isNaN(stock) || stock < 0) return showToast('Số lượng không hợp lệ!', 'warning');
-  if (!category)      return showToast('Vui lòng chọn danh mục!', 'warning');
+  if (!category && !categoryName)      return showToast('Vui lòng chọn danh mục!', 'warning');
 
-  const payload = { name, price, stockQuantity: stock, category, description: desc,
+  const payload = { name, price, stockQuantity: stock, categoryId, category: categoryName, description: desc,
                     imageUrl: imageUrl || null };
   const btn = document.getElementById('saveBtn');
   btn.disabled = true;
@@ -685,6 +778,106 @@ async function executeDelete() {
     btn.innerHTML = '🗑️ Xóa vĩnh viễn';
     pendingDeleteId = null;
   }
+}
+
+/* ══════════════════════════════════════
+   Modal: Category manager
+══════════════════════════════════════ */
+function openCategoryManager() {
+  resetCategoryForm();
+  renderCategoryManager();
+  openModal('categoryModal');
+}
+
+function renderCategoryManager() {
+  const wrap = document.getElementById('categoryManagerList');
+  if (!wrap) return;
+  if (!allCategories.length) {
+    wrap.innerHTML = '<div class="empty-state" style="padding:26px 12px;"><p>Chưa có danh mục nào.</p></div>';
+    return;
+  }
+
+  wrap.innerHTML = allCategories.map(category => `
+    <div class="category-row">
+      <div>
+        <div class="category-row-info">
+          <span>${getCatIcon(category.name)}</span>
+          <span>${esc(category.name)}</span>
+        </div>
+        <div class="category-row-meta">ID #${category.id || 'mặc định'} · Thứ tự ${category.sortOrder ?? 0}</div>
+      </div>
+      <div class="action-btns">
+        <button class="btn-edit" onclick="editCategory(${category.id})" ${category.id == null ? 'disabled' : ''}>✏️ Sửa</button>
+        <button class="btn-del" onclick="deleteCategory(${category.id}, ${jsStr(category.name)})" ${category.id == null ? 'disabled' : ''}>Ẩn</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function editCategory(id) {
+  const category = allCategories.find(item => item.id === id);
+  if (!category) return;
+  categoryEditingId = category.id;
+  document.getElementById('categoryEditId').value = category.id;
+  document.getElementById('categoryName').value = category.name || '';
+  document.getElementById('categorySortOrder').value = category.sortOrder ?? 0;
+  document.getElementById('categoryName').focus();
+}
+
+function resetCategoryForm() {
+  categoryEditingId = null;
+  document.getElementById('categoryEditId').value = '';
+  document.getElementById('categoryName').value = '';
+  document.getElementById('categorySortOrder').value = 0;
+}
+
+async function saveCategory() {
+  const name = document.getElementById('categoryName').value.trim();
+  const sortOrder = parseInt(document.getElementById('categorySortOrder').value || '0', 10);
+  if (!name) return showToast('Vui lòng nhập tên danh mục!', 'warning');
+
+  const btn = document.getElementById('categorySaveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Đang lưu...';
+
+  try {
+    const payload = { name, sortOrder, active: true };
+    const id = categoryEditingId || document.getElementById('categoryEditId').value;
+    if (id) {
+      await fetchAPI(`/categories/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+      showToast('✅ Cập nhật danh mục thành công!', 'success');
+    } else {
+      await fetchAPI('/categories', { method: 'POST', body: JSON.stringify(payload) });
+      showToast('✅ Thêm danh mục thành công!', 'success');
+    }
+    resetCategoryForm();
+    await refreshCategories();
+    renderCategoryManager();
+  } catch (err) {
+    showToast('❌ Lỗi danh mục: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '💾 Lưu danh mục';
+  }
+}
+
+async function deleteCategory(id, name) {
+  if (!id) return;
+  if (!confirm(`Ẩn danh mục "${name}"? Sản phẩm cũ vẫn giữ liên kết, nhưng danh mục sẽ không còn hiện trong danh sách chọn.`)) {
+    return;
+  }
+  try {
+    await fetchAPI(`/categories/${id}`, { method: 'DELETE' });
+    showToast('🗂️ Đã ẩn danh mục.', 'success');
+    await refreshCategories();
+    renderCategoryManager();
+  } catch (err) {
+    showToast('❌ Lỗi khi ẩn danh mục: ' + err.message, 'error');
+  }
+}
+
+async function refreshCategories() {
+  await loadProducts();
 }
 
 /* ══════════════════════════════════════
@@ -766,9 +959,23 @@ function getCatIcon(cat) {
   return icons[cat] || '📦';
 }
 
+function setSelectedCategory(product) {
+  const sel = document.getElementById('fCategory');
+  if (product.categoryId) {
+    sel.value = String(product.categoryId);
+    return;
+  }
+  const match = [...sel.options].find(o => o.dataset.name === product.category);
+  sel.value = match ? match.value : '';
+}
+
 function esc(str) {
   if (!str) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function jsStr(value) {
+  return JSON.stringify(value || '');
 }
 </script>
 </body>

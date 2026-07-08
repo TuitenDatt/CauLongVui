@@ -7,6 +7,18 @@ const searchInput     = document.getElementById('search-input');
 const categoryFilter  = document.getElementById('filter-category');
 
 let allProducts = [];
+let allCategories = [];
+
+const defaultCategories = [
+  { id: null, name: 'Cầu lông' },
+  { id: null, name: 'Vợt' },
+  { id: null, name: 'Giày' },
+  { id: null, name: 'Túi' },
+  { id: null, name: 'Quần áo' },
+  { id: null, name: 'Phụ kiện' },
+  { id: null, name: 'Nước uống' },
+  { id: null, name: 'Đồ ăn' },
+];
 
 const categoryIcons = {
   'Vợt': '', 'Cầu': '', 'Cầu lông': '', 'Giày': '',
@@ -24,8 +36,14 @@ function getIcon(category, name) {
 async function loadProducts() {
   renderSkeletons(productsGrid, 8, '300px');
   try {
-    allProducts = await fetchAPI('/products');
+    const [products, categories] = await Promise.all([
+      fetchAPI('/products'),
+      loadCategories()
+    ]);
+    allProducts = products;
+    allCategories = categories;
     populateCategoryFilter(allProducts);
+    populateShopCategoryOptions();
     renderProducts(allProducts);
 
     // Nút Thêm sản phẩm cho ADMIN ở đầu trang
@@ -42,6 +60,16 @@ async function loadProducts() {
         <p>${err.message}</p>
       </div>`;
     showToast('Lỗi tải sản phẩm. Kiểm tra kết nối API.', 'error');
+  }
+}
+
+async function loadCategories() {
+  try {
+    const categories = await fetchAPI('/categories');
+    return categories.length ? categories : defaultCategories;
+  } catch (err) {
+    console.warn('[Categories]', err.message);
+    return defaultCategories;
   }
 }
 
@@ -132,9 +160,23 @@ function stockLabel(qty) {
 // ─────────────────────────────────────────────────
 function populateCategoryFilter(products) {
   if (!categoryFilter) return;
-  const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+  const categoryNames = allCategories.map(c => c.name).filter(Boolean);
+  const productNames = products.map(p => p.category).filter(Boolean);
+  const categories = [...new Set([...categoryNames, ...productNames])];
   categoryFilter.innerHTML = '<option value="">Tất cả danh mục</option>'
     + categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+}
+
+function populateShopCategoryOptions() {
+  const sel = document.getElementById('shopFCategory');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Chọn danh mục —</option>'
+    + allCategories.map(c => {
+      const value = c.id != null ? String(c.id) : c.name;
+      return `<option value="${escapeHtml(value)}" data-name="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`;
+    }).join('');
+  if (current) sel.value = current;
 }
 
 function applyFilters() {
@@ -208,7 +250,7 @@ function openShopEditModal(id) {
   document.getElementById('shopFName').value     = p.name          || '';
   document.getElementById('shopFPrice').value    = p.price         != null ? p.price : '';
   document.getElementById('shopFStock').value    = p.stockQuantity != null ? p.stockQuantity : '';
-  document.getElementById('shopFCategory').value = p.category      || '';
+  setSelectedShopCategory(p);
   document.getElementById('shopFDesc').value     = p.description   || '';
   document.getElementById('shopFImageUrl').value = p.imageUrl      || '';
   shopPreviewImage(p.imageUrl || '');
@@ -220,6 +262,9 @@ async function saveShopProduct() {
   const price    = parseFloat(document.getElementById('shopFPrice').value);
   const stock    = parseInt(document.getElementById('shopFStock').value);
   const category = document.getElementById('shopFCategory').value;
+  const categoryOption = document.getElementById('shopFCategory').selectedOptions[0];
+  const categoryName = categoryOption?.dataset?.name || categoryOption?.textContent?.trim() || '';
+  const categoryId = /^\d+$/.test(category) ? Number(category) : null;
   const desc     = document.getElementById('shopFDesc').value.trim();
   const imageUrl = document.getElementById('shopFImageUrl').value.trim();
   const editId   = document.getElementById('shopEditId').value;
@@ -229,7 +274,7 @@ async function saveShopProduct() {
   if (isNaN(stock) || stock < 0) return showToast('Số lượng không hợp lệ!', 'warning');
   if (!category)                 return showToast('Vui lòng chọn danh mục!', 'warning');
 
-  const payload = { name, price, stockQuantity: stock, category,
+  const payload = { name, price, stockQuantity: stock, categoryId, category: categoryName,
                     description: desc, imageUrl: imageUrl || null };
   const btn = document.getElementById('shopSaveBtn');
   btn.disabled = true; btn.innerHTML = 'Đang lưu...';
@@ -265,6 +310,17 @@ function shopResetImgPreview() {
 // ─────────────────────────────────────────────────
 // Modal Xóa sản phẩm (Admin)
 // ─────────────────────────────────────────────────
+function setSelectedShopCategory(product) {
+  const sel = document.getElementById('shopFCategory');
+  if (!sel) return;
+  if (product.categoryId) {
+    sel.value = String(product.categoryId);
+    return;
+  }
+  const match = [...sel.options].find(o => o.dataset.name === product.category);
+  sel.value = match ? match.value : '';
+}
+
 let shopPendingDeleteId = null;
 
 function openShopDeleteConfirm(id, name) {

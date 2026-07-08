@@ -18,6 +18,7 @@ public class ProductDTO {
     private Integer stockQuantity;
     private String imageUrl;
     private String category;
+    private Long categoryId;
 
     public static ProductDTO fromEntity(Product product) {
         return ProductDTO.builder()
@@ -27,7 +28,8 @@ public class ProductDTO {
                 .price(product.getPrice())
                 .stockQuantity(product.getStockQuantity())
                 .imageUrl(product.getImageUrl())
-                .category(product.getCategory())
+                .category(product.getCategoryEntity() != null ? product.getCategoryEntity().getName() : product.getCategory())
+                .categoryId(product.getCategoryEntity() != null ? product.getCategoryEntity().getId() : null)
                 .build();
     }
 
