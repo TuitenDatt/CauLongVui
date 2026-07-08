@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -25,9 +26,12 @@ public class SecurityConfig {
             HttpSecurity http,
             ObjectProvider<ClientRegistrationRepository> clientRegistrationRepository,
             ObjectProvider<CognitoAuthorizationRequestResolver> cognitoAuthorizationRequestResolver,
-            OAuth2LoginSuccessHandler oauth2LoginSuccessHandler) throws Exception {
+            OAuth2LoginSuccessHandler oauth2LoginSuccessHandler,
+            CorsConfigurationSource corsConfigurationSource) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                // Bật CORS với config từ WebConfig.corsConfigurationSource()
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll());
 

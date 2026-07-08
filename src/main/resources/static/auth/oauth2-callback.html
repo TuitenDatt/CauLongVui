@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dang nhap Google - Cau Long Vui</title>
   <link rel="icon" type="image/png" href="/favicon.png">
+  <script src="/config.js"></script>
   <link rel="stylesheet" href="/css/shared.css" />
   <style>
     body {
@@ -59,7 +60,8 @@
       }
 
       try {
-        const res = await fetch('/api/auth/me?id=' + encodeURIComponent(userId));
+        const apiBase = (window.APP_CONFIG?.apiBase ?? '') + '/api';
+        const res = await fetch(apiBase + '/auth/me?id=' + encodeURIComponent(userId));
         const json = await res.json();
 
         if (!res.ok || !json.success || !json.data) {

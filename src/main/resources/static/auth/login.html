@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -371,6 +371,7 @@
       }
     }
   </style>
+  <script src="/config.js"></script>
 </head>
 
 <body>
@@ -463,7 +464,7 @@
       showError('Đăng nhập Google thất bại. Vui lòng kiểm tra cấu hình Cognito hoặc thử lại.');
     }
 
-    fetch('/api/auth/oauth2/enabled')
+    fetch((window.APP_CONFIG?.apiBase??'')+'/api/auth/oauth2/enabled')
       .then(res => res.json())
       .then(json => {
         if (json.success && json.data === true) {
@@ -495,7 +496,7 @@
       submitBtn.textContent = 'Đang đăng nhập...';
 
       try {
-        const res = await fetch('/api/auth/login', {
+        const res = await fetch((window.APP_CONFIG?.apiBase??'')+'/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })

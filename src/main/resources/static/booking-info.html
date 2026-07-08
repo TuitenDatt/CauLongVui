@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -15,6 +15,7 @@
       display: none !important;
     }
   </style>
+  <script src="/config.js"></script>
 </head>
 <body>
 
@@ -362,7 +363,7 @@ Vao muc "Lich dat" de thanh toan sau.`);
           window.location.href = `/api/payment/momo-return?orderId=CLV-${bookingId}-DEVTEST&amount=${price}&resultCode=0&message=Success_Dev_Test&transId=9999999999`;
           return;
         }
-        const momoRes = await fetch('/api/payment/momo', {
+        const momoRes = await fetch((window.APP_CONFIG?.apiBase??'')+'/api/payment/momo', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ bookingId, amount: price, courtName, customerName: name })
         });

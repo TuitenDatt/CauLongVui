@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -344,6 +344,7 @@
       }
     }
   </style>
+  <script src="/config.js"></script>
 </head>
 
 <body>
@@ -470,7 +471,7 @@
       submitBtn.textContent = 'Đang tạo tài khoản...';
 
       try {
-        const res = await fetch('/api/auth/register', {
+        const res = await fetch((window.APP_CONFIG?.apiBase??'')+'/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ fullName, email, password, phone })

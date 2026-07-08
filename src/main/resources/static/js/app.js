@@ -2,7 +2,10 @@
  * app.js - Shared utilities for CauLongVui front-end
  */
 
-const API_BASE = '/api';
+// API base URL — được cấu hình bởi config.js tùy theo môi trường.
+// Local dev: '' (same-origin) → fetch('/api/...')
+// Production (CloudFront): 'https://xxx.cloudfront.net' → fetch('https://xxx.cloudfront.net/api/...')
+const API_BASE = (window.APP_CONFIG?.apiBase ?? '') + '/api';
 
 async function fetchAPI(endpoint, options = {}) {
   const defaultOptions = {

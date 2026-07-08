@@ -34,6 +34,9 @@ public class AuthController {
     @Value("${app.base-url:http://localhost:8080}")
     private String appBaseUrl;
 
+    @Value("${app.frontend-url:http://localhost:8080}")
+    private String frontendUrl;
+
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(
             @Valid @RequestBody RegisterRequest req) {
@@ -83,17 +86,17 @@ public class AuthController {
 
         ClientRegistrationRepository registrations = clientRegistrationRepository.getIfAvailable();
         if (registrations == null) {
-            response.sendRedirect("/auth/login.html?oauthError=true");
+            response.sendRedirect(frontendUrl + "/auth/login.html?oauthError=true");
             return;
         }
 
         var registration = registrations.findByRegistrationId("cognito");
         if (registration == null) {
-            response.sendRedirect("/auth/login.html?oauthError=true");
+            response.sendRedirect(frontendUrl + "/auth/login.html?oauthError=true");
             return;
         }
 
-        String restartLoginUrl = appBaseUrl + "/auth/google-switch.html";
+        String restartLoginUrl = frontendUrl + "/auth/google-switch.html";
         Map<String, Object> metadata = registration.getProviderDetails().getConfigurationMetadata();
         Object endSessionEndpoint = metadata.get("end_session_endpoint");
 

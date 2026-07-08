@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
@@ -286,7 +286,7 @@
   </div>
 </div>
 
-<script src="/js/app.js"></script>
+<script src="/config.js"></script>`n  <script src="/js/app.js"></script>
 <script>
   let allCourts = [];
 
@@ -304,7 +304,7 @@
   // ── Load danh sách sân
   async function loadCourts() {
     try {
-      const res  = await fetch('/api/courts');
+      const res  = await fetch((window.APP_CONFIG?.apiBase??'')+'/api/courts');
       const json = await res.json();
       if (!json.success) throw new Error(json.message);
       allCourts = json.data;

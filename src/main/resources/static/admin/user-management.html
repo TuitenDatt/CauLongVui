@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
@@ -340,7 +340,7 @@
 <div id="footer-placeholder"></div>
 <div id="toast-container"></div>
 
-<script src="/js/app.js"></script>
+<script src="/config.js"></script>`n  <script src="/js/app.js"></script>
 <script>
 /* ══════════ State ══════════ */
 let allUsers = [];
@@ -360,7 +360,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 /* ══════════ Load & Render ══════════ */
 async function loadUsers() {
   try {
-    const res  = await fetch('/api/users');
+    const res  = await fetch((window.APP_CONFIG?.apiBase??'')+'/api/users');
     const json = await res.json();
     if (!json.success) throw new Error(json.message || 'Không thể tải danh sách người dùng');
     allUsers = json.data || [];

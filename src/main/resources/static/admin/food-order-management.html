@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
@@ -161,7 +161,7 @@
 <div id="footer-placeholder"></div>
 <div id="toast-container"></div>
 
-<script src="/js/app.js"></script>
+<script src="/config.js"></script>`n  <script src="/js/app.js"></script>
 <script>
 let allOrders = [];
 
@@ -179,7 +179,7 @@ async function loadOrders() {
   const tbody = document.getElementById('orderTableBody');
   tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">⏳</div><p>Đang tải...</p></div></td></tr>`;
   try {
-    const res  = await fetch('/api/v1/food-orders?page=1&limit=200');
+    const res  = await fetch((window.APP_CONFIG?.apiBase??'')+'/api/v1/food-orders?page=1&limit=200');
     const json = await res.json();
     if (!json.success) throw new Error(json.message);
     allOrders = json.data.items || [];

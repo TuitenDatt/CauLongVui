@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -19,6 +19,7 @@
     .total-bundle .amount { font-size:26px; font-weight:900; }
     .btn-pay-dev { display:none !important; }
   </style>
+  <script src="/config.js"></script>
 </head>
 <body>
 
@@ -229,7 +230,7 @@
 
       try {
         // Bước 1: Tạo bundle
-        const createRes = await fetch('/api/bundles', {
+        const createRes = await fetch((window.APP_CONFIG?.apiBase??'')+'/api/bundles', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             userId: user ? user.id : null,
@@ -266,7 +267,7 @@
           return;
         }
 
-        const momoRes = await fetch('/api/payment/momo', {
+        const momoRes = await fetch((window.APP_CONFIG?.apiBase??'')+'/api/payment/momo', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ bookingId: bundleId, amount: totalPrice, courtName: 'Cum san ' + bundleCourtsRaw.length + ' san', customerName: name, isBundlePayment: true })
         });

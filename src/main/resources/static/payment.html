@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -110,6 +110,7 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
+  <script src="/config.js"></script>
 </head>
 <body>
 
@@ -288,7 +289,7 @@
       status: 'OPEN'
     };
 
-    fetch('/api/matchmaking', {
+    fetch((window.APP_CONFIG?.apiBase??'')+'/api/matchmaking', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(payload)

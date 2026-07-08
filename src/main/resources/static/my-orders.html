@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
@@ -130,7 +130,7 @@
 <div id="footer-placeholder"></div>
 <div id="toast-container"></div>
 
-<script src="/js/app.js"></script>
+<script src="/config.js"></script>`n  <script src="/js/app.js"></script>
 <script>
 const ICONS = {
   'Vợt':'🏸','Cầu':'🪶','Cầu lông':'🪶','Giày':'👟',
@@ -227,7 +227,7 @@ async function renderOrders() {
   /* 1. Lấy đơn từ API (food orders tại sân) */
   let apiOrders = [];
   try {
-    const res  = await fetch('/api/v1/food-orders?page=1&limit=200');
+    const res  = await fetch((window.APP_CONFIG?.apiBase??'')+'/api/v1/food-orders?page=1&limit=200');
     const json = await res.json();
     if (json.success) {
       apiOrders = (json.data.items || [])

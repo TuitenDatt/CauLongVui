@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
@@ -266,7 +266,7 @@
   </div>
 </div>
 
-<script src="/js/app.js"></script>
+<script src="/config.js"></script>`n  <script src="/js/app.js"></script>
 <script>
   let allBookings = [];
   let allBundles  = [];
@@ -307,7 +307,7 @@
     list.innerHTML = `<div class="empty-state"><h3>Đang tải dữ liệu...</h3></div>`;
 
     try {
-      const res  = await fetch('/api/bookings?userId=' + user.id);
+      const res  = await fetch((window.APP_CONFIG?.apiBase??'')+'/api/bookings?userId=' + user.id);
       const json = await res.json();
       allBookings = (json.success && json.data) ? json.data : [];
       renderBookings();
@@ -321,7 +321,7 @@
     const list = document.getElementById('bundleList');
     if (!user) return;
     try {
-      const res = await fetch('/api/bundles?userId=' + user.id);
+      const res = await fetch((window.APP_CONFIG?.apiBase??'')+'/api/bundles?userId=' + user.id);
       const json = await res.json();
       allBundles = (json.success && json.data) ? json.data : [];
       renderBundles();
@@ -526,8 +526,8 @@
       document.getElementById('menuGrid').innerHTML = `<div class="empty-state" style="grid-column: 1/-1;"><h3>Đang tải menu...</h3></div>`;;
       try {
         const [prodRes, rackRes] = await Promise.all([
-          fetch('/api/products').then(r => r.json()),
-          fetch('/api/v1/rackets').then(r => r.json())
+          fetch((window.APP_CONFIG?.apiBase??'')+'/api/products').then(r => r.json()),
+          fetch((window.APP_CONFIG?.apiBase??'')+'/api/v1/rackets').then(r => r.json())
         ]);
         
         let products = (prodRes.success ? prodRes.data : prodRes) || [];
@@ -728,7 +728,7 @@
     btn.textContent = 'Đang tải...'; btn.disabled = true;
     try {
       const fd = new FormData(); fd.append('file', file);
-      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const res = await fetch((window.APP_CONFIG?.apiBase??'')+'/api/upload', { method: 'POST', body: fd });
       const json = await res.json();
       if(!res.ok || !json.success) throw new Error();
       document.getElementById('menuCccdUrl').value = json.data;
@@ -770,7 +770,7 @@
           paymentMethod: payMethod,
           items: c2.map(c => ({ racketId: c.id, quantity: c.qty }))
         };
-        const rRes = await fetch('/api/v1/racket-rentals', {
+        const rRes = await fetch((window.APP_CONFIG?.apiBase??'')+'/api/v1/racket-rentals', {
           method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(rPayload)
         });
         if(!rRes.ok) throw new Error('Lỗi tạo đơn thuê vợt');
@@ -786,7 +786,7 @@
           deliveryTime: null,
           items: c1.map(i => ({ productId: i.id, quantity: i.qty }))
         };
-        const foodRes = await fetch('/api/v1/food-orders', {
+        const foodRes = await fetch((window.APP_CONFIG?.apiBase??'')+'/api/v1/food-orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(foodPayload)

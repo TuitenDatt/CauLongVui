@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -340,6 +340,7 @@
       transform: translateY(-1px);
     }
   </style>
+  <script src="/config.js"></script>
 </head>
 
 <body>
@@ -539,7 +540,7 @@
 
     // ── Load all courts ────────────────────────────────────────
     async function loadCourts() {
-      const res = await fetch('/api/courts');
+      const res = await fetch((window.APP_CONFIG?.apiBase??'')+'/api/courts');
       const json = await res.json();
       if (!json.success) throw new Error(json.message);
 
@@ -1055,7 +1056,7 @@
 
     async function requestHold(courtId, date, startTime, endTime) {
       try {
-        const res = await fetch('/api/bookings/hold', {
+        const res = await fetch((window.APP_CONFIG?.apiBase??'')+'/api/bookings/hold', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ courtId, bookingDate: date, startTime, endTime, userId: myUserId })
